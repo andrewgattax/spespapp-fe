@@ -1,5 +1,5 @@
 import {createContext, useContext, useState, useEffect, type ReactNode} from "react";
-import {post, utenteService} from "@/api";
+import {post} from "@/api";
 import {getItem, setItem, removeItem} from "@/utils/storage";
 
 interface User {

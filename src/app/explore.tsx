@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { SymbolView } from 'expo-symbols';
-import React from 'react';
+import React, {useState} from 'react';
 import { Platform, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -11,6 +11,8 @@ import { Collapsible } from '@/components/ui/collapsible';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import {ApiError, userService} from "@/api";
+import {useUser} from "@/context/UserContext";
 
 export default function TabTwoScreen() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -19,6 +21,24 @@ export default function TabTwoScreen() {
     bottom: safeAreaInsets.bottom + BottomTabInset + Spacing.three,
   };
   const theme = useTheme();
+
+  const {loadFromJwt, user} = useUser();
+
+  const [serverError, setServerError] = useState("");
+  const [username, setUsername] = useState("");
+
+  const handleLogin = async () => {
+    try {
+      const response = await userService.login({})
+
+    } catch (e) {
+      if(e instanceof ApiError) {
+        setServerError(e.payload.message)
+      } else {
+        setServerError("An unexpected error occurred")
+      }
+    }
+  };
 
   const contentPlatformStyle = Platform.select({
     android: {
@@ -57,6 +77,12 @@ export default function TabTwoScreen() {
               </ThemedView>
             </Pressable>
           </ExternalLink>
+
+          <Pressable style={({ pressed }) => pressed && styles.pressed} onPress={handleLogin}>
+            <ThemedView type="backgroundElement" style={styles.linkButton}>
+              <ThemedText type="link">Login</ThemedText>
+            </ThemedView>
+          </Pressable>
         </ThemedView>
 
         <ThemedView style={styles.sectionsWrapper}>
