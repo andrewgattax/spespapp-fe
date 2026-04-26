@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import * as Sharing from 'expo-sharing';
 
+
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -28,6 +29,8 @@ import {
 import {useUser} from "@/context/UserContext";
 
 type RegistrationState = 'input' | 'generating' | 'success';
+
+type DeviceIdForm = z.infer<typeof UpdateDeviceIdSchema>
 
 export default function RegisterScreen() {
   const safeAreaInsets = useSafeAreaInsets();
