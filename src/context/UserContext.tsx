@@ -1,19 +1,21 @@
 import {createContext, useContext, useState, useEffect, type ReactNode} from "react";
-import {post} from "@/api";
+import * as SecureStore from "expo-secure-store";
 import {getItem, setItem, removeItem} from "@/utils/storage";
+import {hasKeys, getUsername as getKeyUsername} from "@/utils/keyManager";
 
 interface User {
   username: string | null;
-  storiePubblicate: number;
-  storieCondivise: number;
-  templateSalvati: number;
 }
 
 interface UserContextType {
   user: User | null;
   isLoading: boolean;
-  loadFromJwt: (token: string) => void;
-  logout: () => void;
+  isRegistered: boolean;
+  registeredUsername: string | null;
+  loadFromJwt: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
+  getToken: () => Promise<string | null>;
+  checkRegistrationStatus: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -21,6 +23,8 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({children}: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRegistered, setIsRegistered] = useState<boolean>(false);
+  const [registeredUsername, setRegisteredUsername] = useState<string | null>(null);
 
   const decodeJwt = (token: string) => {
     try {
@@ -45,15 +49,15 @@ export function UserProvider({children}: { children: ReactNode }) {
 
   const loadFromJwt = async (token: string) => {
     const decoded = decodeJwt(token);
-    if (decoded?.username) {
-      const username = decoded.username;
-      const storiePubblicate = decoded.storiePubblicate || 0;
-      const storieCondivise = decoded.storieCondivise || 0;
-      const templateSalvati = decoded.templateSalvati || 0;
+    if (decoded?.sub) {
+      const username = decoded.sub;
 
-      setUser({username, storiePubblicate, storieCondivise, templateSalvati});
+      // Store JWT in SecureStore (encrypted, no biometric prompt required)
+      await SecureStore.setItemAsync("auth_token", token);
+
+      setUser({username});
       // Save decoded user to AsyncStorage
-      await setItem("user", JSON.stringify({username, storiePubblicate, storieCondivise, templateSalvati}));
+      await setItem("user", JSON.stringify({username}));
     } else {
       console.error("Username claim not found in JWT");
     }
@@ -67,17 +71,25 @@ export function UserProvider({children}: { children: ReactNode }) {
         try {
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser?.username) {
-            setUser({
-              username: parsedUser.username,
-              storiePubblicate: parsedUser.storiePubblicate || 0,
-              storieCondivise: parsedUser.storieCondivise || 0,
-              templateSalvati: parsedUser.templateSalvati || 0
-            });
+            // Verify JWT still exists in SecureStore
+            const token = await SecureStore.getItemAsync("auth_token");
+            if (token) {
+              setUser({
+                username: parsedUser.username
+              });
+            } else {
+              // Token missing, clear user data
+              await removeItem("user");
+            }
           }
         } catch (error) {
           console.error("Error parsing stored user:", error);
         }
       }
+
+      // Check registration status
+      await checkRegistrationStatus();
+
       setIsLoading(false);
     };
 
@@ -86,16 +98,38 @@ export function UserProvider({children}: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await post<void>("/utente/logout", {});
       setUser(null);
       await removeItem("user");
+      // Clear JWT from SecureStore
+      await SecureStore.deleteItemAsync("auth_token");
     } catch (error) {
       console.error("Error during logout:", error);
     }
   };
 
+  const getToken = async (): Promise<string | null> => {
+    try {
+      return await SecureStore.getItemAsync("auth_token");
+    } catch (error) {
+      console.error("Error getting token:", error);
+      return null;
+    }
+  };
+
+  const checkRegistrationStatus = async () => {
+    try {
+      const keysExist = await hasKeys();
+      const username = await getKeyUsername();
+
+      setIsRegistered(keysExist);
+      setRegisteredUsername(username);
+    } catch (error) {
+      console.error("Error checking registration status:", error);
+    }
+  };
+
   return (
-    <UserContext.Provider value={{user, isLoading, loadFromJwt, logout}}>
+    <UserContext.Provider value={{user, isLoading, isRegistered, registeredUsername, loadFromJwt, logout, getToken, checkRegistrationStatus}}>
       {children}
     </UserContext.Provider>
   );

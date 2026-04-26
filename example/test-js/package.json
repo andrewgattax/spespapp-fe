@@ -1,0 +1,18 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "RSA authentication test scripts",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-keys": "node generate-keys.js",
+    "auth-test": "node login.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.9",
+    "base64url": "^3.0.1"
+  }
+}

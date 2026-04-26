@@ -1,6 +1,8 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
 import type { ErrorResponse } from './types'
 import { removeItem } from '@/utils/storage'
+import * as SecureStore from 'expo-secure-store'
+import { getItem, deleteItem } from "@/utils/secureStorage"
 
 export class ApiError extends Error {
   public readonly statusCode: number
@@ -15,11 +17,29 @@ export class ApiError extends Error {
 }
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'http://192.168.1.79:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },
 })
+
+// Request interceptor: Attach JWT to all requests
+apiClient.interceptors.request.use(
+  async (config) => {
+    try {
+      const token = await getItem('auth_token', {skipAuth: true})
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (error) {
+      console.error('Error attaching token to request:', error)
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 
 apiClient.interceptors.response.use(
   (response: any) => response,
@@ -28,13 +48,12 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear user data from AsyncStorage
       await removeItem('user')
-
-      // Note: Navigation should be handled by the calling component
-      // React Native apps should use router.push() or navigation.navigate()
-      // instead of window.location which is web-specific
-
-      // Return a rejected promise to prevent further processing
-      return Promise.reject(error)
+      // Clear JWT from SecureStore
+      try {
+        await deleteItem('auth_token', {skipAuth: true})
+      } catch (e) {
+        console.error('Error clearing token:', e)
+      }
     }
 
     if (error.response?.data) {
