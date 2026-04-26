@@ -1,13 +1,11 @@
 import React from 'react';
-import { useColorScheme } from 'react-native';
+import "@/global.css"
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AuthGuard from '@/utils/auth-guard';
 import {UserProvider} from "@/context/UserContext";
 import {Stack} from "expo-router";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+
   return (
     <UserProvider>
       <Stack screenOptions={{ headerShown: false }} />

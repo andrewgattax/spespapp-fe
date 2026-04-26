@@ -1,4 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  text {
+    color: var(--color-text);
+  }
+}
+
 :root {
+  /* Fonts */
   --font-display:
     Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
     Segoe UI Symbol, Noto Color Emoji;
@@ -6,4 +17,30 @@
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+
+  /* Light Theme (default) */
+  --color-text: #ff0000;
+  --color-foreground: #ffffff;
+  --color-primary: #009866;
+  --color-secondary: #D0FAE5;
+  --color-accent: #FF6800;
+  --color-background: #ffffff;
+  --color-background-element: #F0F0F3;
+  --color-background-selected: #E0E1E6;
+  --color-text-secondary: #60646C;
+  --color-text-muted: #60646C;
+}
+
+.dark {
+  /* Dark Theme */
+  --color-text: #ffffff;
+  --color-foreground: #000000;
+  --color-primary: #009866;
+  --color-secondary: #516052;
+  --color-accent: #FF6800;
+  --color-background: #000000;
+  --color-background-element: #212225;
+  --color-background-selected: #2E3135;
+  --color-text-secondary: #B0B4BA;
+  --color-text-muted: #B0B4BA;
 }
