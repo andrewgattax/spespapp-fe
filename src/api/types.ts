@@ -26,5 +26,10 @@ export interface InitLoginRequest {
   username: string
 }
 
+export interface UpdateDeviceIdRequest {
+  previousDeviceId: string
+  newDeviceId: string
+}
+
 
 

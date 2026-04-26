@@ -11,13 +11,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 
-import { getDeviceId, storeDeviceId } from "@/utils/keyManager"
-
-import { z } from "zod"
-import { useForm, Controller } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { UpdateDeviceIdSchema, userService, ApiError } from "@/api"
-
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -39,13 +32,9 @@ import {useUser} from "@/context/UserContext";
 
 type ActionState = 'idle' | 'regenerating' | 'resetting';
 
-type DeviceIdForm = z.infer<typeof UpdateDeviceIdSchema>
-
 export default function SettingsScreen() {
   const safeAreaInsets = useSafeAreaInsets();
   const theme = useTheme();
-
-  let deviceId: string = "";
 
   const [username, setUsername] = useState<string | null>(null);
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -55,18 +44,6 @@ export default function SettingsScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   const { logout, checkRegistrationStatus } = useUser()
-
-  const {
-    control: deviceIdControl,
-    handleSubmit: deviceIdSubmit,
-    formState: {
-      errors: deviceIdErrors,
-      isSubmitting: deviceIdSubmitting
-    }
-  } = useForm<DeviceIdForm>({
-    resolver: zodResolver,
-    mode: "onTouched"
-  })
 
   useEffect(() => {
     loadUserData();
@@ -79,7 +56,6 @@ export default function SettingsScreen() {
         getUsername(),
         getPublicKeyBase64(),
       ]);
-      deviceId = await getDeviceId(true);
       setUsername(storedUsername);
       setPublicKey(storedPublicKey);
       setNewUsername(storedUsername || '');
@@ -94,25 +70,6 @@ export default function SettingsScreen() {
       setIsLoading(false);
     }
   };
-
-  const handleUpdateDeviceId = async (data: DeviceIdForm) => {
-    try {
-      let body = {
-        previousDeviceId: deviceId,
-        newDeviceId: data.newDeviceId
-      }
-
-      await userService.updateDeviceId(body)
-      await storeDeviceId(data.newDeviceId)
-
-    } catch (e) {
-      if(e instanceof ApiError) {
-        Alert.alert("Error", e.payload.message)
-      } else {
-        Alert.alert("Error", "Failed to update device id")
-      }
-    }
-  }
 
   const handleRegenerateKeys = async () => {
     if (!newUsername.trim()) {
@@ -315,36 +272,24 @@ export default function SettingsScreen() {
           </ThemedView>
         </ThemedView>
 
+        {/* Device ID Management Section */}
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Device id</ThemedText>
-          <Controller
-            control={deviceIdControl}
-            name="newDeviceId"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <ThemedView style={styles.inputContainer}>
-                <ThemedText style={styles.inputLabel}>
-                  Nuovo device id
-                </ThemedText>
-                <TextInput
-                  style={[styles.input, { color: theme.text, borderColor: '#ccc' }]}
-                  value={value}
-                  onChangeText={onChange}
-                  onBlur={onBlur}
-                  placeholder="Nuovo Device Id"
-                  placeholderTextColor={theme.textSecondary}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-              </ThemedView>
-          )}
-          />
-          {deviceIdErrors.newDeviceId && <Text style={styles.error}>{deviceIdErrors.newDeviceId.message}</Text>}
-
+          <ThemedText style={styles.sectionTitle}>Device ID Management</ThemedText>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.pressed,
+            ]}
+            onPress={() => router.push('/device-id')}>
+            <ThemedView
+              type="backgroundElement"
+              style={[styles.buttonContent, styles.deviceIdButton]}>
+              <ThemedText style={styles.buttonText} type="link">
+                Manage Device ID
+              </ThemedText>
+            </ThemedView>
+          </Pressable>
         </ThemedView>
-
-        <Pressable disabled={deviceIdSubmitting} style={styles.button} onPress={deviceIdSubmit(handleUpdateDeviceId())}>
-          <Text style={styles.buttonText}>Aggiorna Device Id</Text>
-        </Pressable>
 
         {/* Key Management Section */}
         <ThemedView style={styles.section}>
@@ -556,6 +501,9 @@ const styles = StyleSheet.create({
   },
   regenerateButton: {
     backgroundColor: '#FF9500',
+  },
+  deviceIdButton: {
+    backgroundColor: '#5856D6',
   },
   resetButton: {
     backgroundColor: '#FF3B30',
