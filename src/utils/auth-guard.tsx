@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/theme';
 import LoginScreen from '@/app/login';
+import Newlogin from "@/app/newlogin";
 
 export default function AuthGuard() {
   const { user, isLoading } = useUser();
@@ -18,7 +19,7 @@ export default function AuthGuard() {
   }
 
   if (!user) {
-    return <LoginScreen />;
+    return <Newlogin />;
   }
 
   // When authenticated, render the Expo Router file-based routes
