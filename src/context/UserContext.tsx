@@ -1,7 +1,10 @@
 import {createContext, useContext, useState, useEffect, type ReactNode} from "react";
-import * as SecureStore from "expo-secure-store";
 import {getItem, setItem, removeItem} from "@/utils/storage";
-import {hasKeys, getUsername as getKeyUsername} from "@/utils/keyManager";
+import {hasKeys, getUsername as getKeyUsername, resetKeys} from "@/utils/keyManager";
+import {setSecureItem, getSecureItem, deleteSecureItem} from "@/utils/secureStorage";
+
+// Storage key for authentication token
+const AUTH_TOKEN_KEY = "auth_token";
 
 interface User {
   username: string | null;
@@ -16,6 +19,7 @@ interface UserContextType {
   logout: () => Promise<void>;
   getToken: () => Promise<string | null>;
   checkRegistrationStatus: () => Promise<void>;
+  resetRegistration: () => Promise<void>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -52,8 +56,8 @@ export function UserProvider({children}: { children: ReactNode }) {
     if (decoded?.sub) {
       const username = decoded.sub;
 
-      // Store JWT in SecureStore (encrypted, no biometric prompt required)
-      await SecureStore.setItemAsync("auth_token", token);
+      // Store JWT in secure storage (encrypted, no biometric prompt required)
+      await setSecureItem(AUTH_TOKEN_KEY, token, { skipAuth: true });
 
       setUser({username});
       // Save decoded user to AsyncStorage
@@ -71,8 +75,8 @@ export function UserProvider({children}: { children: ReactNode }) {
         try {
           const parsedUser = JSON.parse(storedUser);
           if (parsedUser?.username) {
-            // Verify JWT still exists in SecureStore
-            const token = await SecureStore.getItemAsync("auth_token");
+            // Verify JWT still exists in secure storage
+            const token = await getSecureItem(AUTH_TOKEN_KEY, { skipAuth: true });
             if (token) {
               setUser({
                 username: parsedUser.username
@@ -100,8 +104,8 @@ export function UserProvider({children}: { children: ReactNode }) {
     try {
       setUser(null);
       await removeItem("user");
-      // Clear JWT from SecureStore
-      await SecureStore.deleteItemAsync("auth_token");
+      // Clear JWT from secure storage
+      await deleteSecureItem(AUTH_TOKEN_KEY, { skipAuth: true });
     } catch (error) {
       console.error("Error during logout:", error);
     }
@@ -109,7 +113,7 @@ export function UserProvider({children}: { children: ReactNode }) {
 
   const getToken = async (): Promise<string | null> => {
     try {
-      return await SecureStore.getItemAsync("auth_token");
+      return await getSecureItem(AUTH_TOKEN_KEY, { skipAuth: true });
     } catch (error) {
       console.error("Error getting token:", error);
       return null;
@@ -128,8 +132,29 @@ export function UserProvider({children}: { children: ReactNode }) {
     }
   };
 
+  const resetRegistration = async () => {
+    try {
+      // Reset local state
+      setUser(null);
+      setIsRegistered(false);
+      setRegisteredUsername(null);
+
+      // Clear all crypto keys, username, and deviceId
+      await resetKeys();
+
+      // Clear JWT from secure storage
+      await deleteSecureItem(AUTH_TOKEN_KEY, { skipAuth: true });
+
+      // Clear user data from AsyncStorage
+      await removeItem("user");
+    } catch (error) {
+      console.error("Error during registration reset:", error);
+      throw error;
+    }
+  };
+
   return (
-    <UserContext.Provider value={{user, isLoading, isRegistered, registeredUsername, loadFromJwt, logout, getToken, checkRegistrationStatus}}>
+    <UserContext.Provider value={{user, isLoading, isRegistered, registeredUsername, loadFromJwt, logout, getToken, checkRegistrationStatus, resetRegistration}}>
       {children}
     </UserContext.Provider>
   );

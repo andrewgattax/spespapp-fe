@@ -1,7 +1,7 @@
 import {ApiError, post} from '../client'
 import { AuthChallenge } from "../types"
 import type {LoginResponse, CompleteLoginRequest} from "@/api";
-import { getPrivateKey } from "@/utils/keyManager";
+import { getPrivateKey, getDeviceId } from "@/utils/keyManager";
 import crypto from 'react-native-quick-crypto';
 import { Buffer } from 'buffer';
 
@@ -46,10 +46,13 @@ class UserService {
     // Step 2: Sign the challenge with the private key
     const signatureBase64 = await this.signChallenge(challenge);
 
+    const deviceId = await getDeviceId(true);
+
     // Step 3: Complete login with the signature
     const completeRequest: CompleteLoginRequest = {
       challengeId: challenge.id,
-      signatureBase64
+      signatureBase64,
+      deviceId
     };
 
     return post<LoginResponse>("/auth/login/complete", completeRequest);

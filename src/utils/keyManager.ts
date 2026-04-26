@@ -1,6 +1,6 @@
 import crypto from 'react-native-quick-crypto';
-import {setItem, getItem, AuthenticationCanceled} from './secureStorage';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {setSecureItem, getSecureItem, deleteSecureItem, AuthenticationCanceled} from './secureStorage';
+import {setItem, getItem, multiRemoveItem} from "./storage"
 
 // Re-export AuthenticationCanceled for convenience
 export { AuthenticationCanceled };
@@ -28,6 +28,7 @@ const STORAGE_KEYS = {
   PRIVATE_KEY: 'user_private_key',
   PUBLIC_KEY: 'user_public_key',
   USERNAME: 'registered_username',
+  DEVICE_ID: 'auth_device_id'
 } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -90,7 +91,7 @@ export async function generateKeyPair(): Promise<KeyPair> {
  */
 export async function storePrivateKey(privateKey: string): Promise<void> {
   try {
-    await setItem(STORAGE_KEYS.PRIVATE_KEY, privateKey, {
+    await setSecureItem(STORAGE_KEYS.PRIVATE_KEY, privateKey, {
       skipAuth: true, // Don't require auth for initial storage
     });
   } catch (error) {
@@ -107,7 +108,7 @@ export async function storePrivateKey(privateKey: string): Promise<void> {
  */
 export async function getPrivateKey(skipAuth = false): Promise<string | null> {
   try {
-    return await getItem(STORAGE_KEYS.PRIVATE_KEY, {
+    return await getSecureItem(STORAGE_KEYS.PRIVATE_KEY, {
       skipAuth,
       authPrompt: 'Authenticate to access your private key',
     });
@@ -127,11 +128,7 @@ export async function getPrivateKey(skipAuth = false): Promise<string | null> {
  * @param publicKeyBase64 - Base64 encoded public key
  */
 export async function storePublicKey(publicKeyBase64: string): Promise<void> {
-  try {
-    await AsyncStorage.setItem(STORAGE_KEYS.PUBLIC_KEY, publicKeyBase64);
-  } catch (error) {
-    throw new Error(`Failed to store public key: ${error}`);
-  }
+    return await setItem(STORAGE_KEYS.PUBLIC_KEY, publicKeyBase64);
 }
 
 /**
@@ -140,11 +137,7 @@ export async function storePublicKey(publicKeyBase64: string): Promise<void> {
  * @returns Promise<string | null> - Base64 encoded public key, or null if not found
  */
 export async function getPublicKeyBase64(): Promise<string | null> {
-  try {
-    return await AsyncStorage.getItem(STORAGE_KEYS.PUBLIC_KEY);
-  } catch (error) {
-    throw new Error(`Failed to retrieve public key: ${error}`);
-  }
+  return await getItem(STORAGE_KEYS.PUBLIC_KEY);
 }
 
 // ─── Key Status ───────────────────────────────────────────────────────────────
@@ -171,11 +164,7 @@ export async function hasKeys(): Promise<boolean> {
  * @param username - The username to store
  */
 export async function storeUsername(username: string): Promise<void> {
-  try {
-    await AsyncStorage.setItem(STORAGE_KEYS.USERNAME, username);
-  } catch (error) {
-    throw new Error(`Failed to store username: ${error}`);
-  }
+    await setItem(STORAGE_KEYS.USERNAME, username);
 }
 
 /**
@@ -184,11 +173,33 @@ export async function storeUsername(username: string): Promise<void> {
  * @returns Promise<string | null> - The stored username, or null if not found
  */
 export async function getUsername(): Promise<string | null> {
-  try {
-    return await AsyncStorage.getItem(STORAGE_KEYS.USERNAME);
-  } catch (error) {
-    throw new Error(`Failed to retrieve username: ${error}`);
-  }
+  return await getItem(STORAGE_KEYS.USERNAME);
+}
+
+// ─── Device id Storage ────────────────────────────────────────────────────────
+
+/**
+ * Store the username from registration.
+ *
+ * @param deviceId - The username to store
+ */
+export async function storeDeviceId(deviceId: string, skipAuth: boolean): Promise<void> {
+    await setSecureItem(STORAGE_KEYS.DEVICE_ID, deviceId, {
+      skipAuth,
+      authPrompt: "Autenticazione richiesta per device id"
+    });
+}
+
+/**
+ * Retrieve the stored username.
+ *
+ * @returns Promise<string | null> - The stored username, or null if not found
+ */
+export async function getDeviceId(skipAuth: boolean): Promise<string | null> {
+  return await getSecureItem(STORAGE_KEYS.DEVICE_ID, {
+    skipAuth,
+    authPrompt: "Autenticazione richiesta per device id"
+  });
 }
 
 // ─── Key Management ───────────────────────────────────────────────────────────
@@ -200,11 +211,12 @@ export async function getUsername(): Promise<string | null> {
 export async function deleteKeys(): Promise<void> {
   try {
     // Delete private key from secure storage
-    const { deleteItem } = await import('./secureStorage');
-    await deleteItem(STORAGE_KEYS.PRIVATE_KEY, { skipAuth: true });
+    await deleteSecureItem(STORAGE_KEYS.PRIVATE_KEY, { skipAuth: true });
+
+    await deleteSecureItem(STORAGE_KEYS.DEVICE_ID, { skipAuth: true });
 
     // Delete public key and username from AsyncStorage
-    await AsyncStorage.multiRemove([STORAGE_KEYS.PUBLIC_KEY, STORAGE_KEYS.USERNAME]);
+    await multiRemoveItem([STORAGE_KEYS.PUBLIC_KEY, STORAGE_KEYS.USERNAME]);
   } catch (error) {
     throw new Error(`Failed to delete keys: ${error}`);
   }

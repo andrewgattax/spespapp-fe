@@ -23,6 +23,7 @@ import {
   storePrivateKey,
   storePublicKey,
   storeUsername,
+  storeDeviceId
 } from '@/utils/keyManager';
 import {useUser} from "@/context/UserContext";
 
@@ -33,6 +34,7 @@ export default function RegisterScreen() {
   const theme = useTheme();
 
   const [username, setUsername] = useState('');
+  const [deviceId, setDeviceId] = useState('');
   const [state, setState] = useState<RegistrationState>('input');
   const [error, setError] = useState('');
   const [publicKey, setPublicKey] = useState('');
@@ -41,6 +43,11 @@ export default function RegisterScreen() {
   const handleGenerateKeys = async () => {
     if (!username.trim()) {
       setError('Please enter a username');
+      return;
+    }
+
+    if (!deviceId.trim()) {
+      setError('Please enter a device ID');
       return;
     }
 
@@ -80,12 +87,6 @@ export default function RegisterScreen() {
       // Generate RSA key pair
       const keys = await generateKeyPair();
 
-      console.log("Private key: ")
-      console.log(keys.private)
-
-      console.log("Public key: ")
-      console.log(keys.publicBase64)
-
       // Store private key securely
       await storePrivateKey(keys.private);
 
@@ -94,6 +95,9 @@ export default function RegisterScreen() {
 
       // Store username
       await storeUsername(username.trim());
+
+      // Store device ID
+      await storeDeviceId(deviceId.trim());
 
       // Show success state
       setPublicKey(keys.publicBase64);
@@ -171,6 +175,19 @@ export default function RegisterScreen() {
                 value={username}
                 onChangeText={setUsername}
                 placeholder="Enter your username"
+                placeholderTextColor={theme.textSecondary}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </ThemedView>
+
+            <ThemedView style={styles.inputContainer}>
+              <ThemedText style={styles.inputLabel}>Device ID</ThemedText>
+              <TextInput
+                style={[styles.input, { color: theme.text, borderColor: '#ccc' }]}
+                value={deviceId}
+                onChangeText={setDeviceId}
+                placeholder="Enter your device ID"
                 placeholderTextColor={theme.textSecondary}
                 autoCapitalize="none"
                 autoCorrect={false}

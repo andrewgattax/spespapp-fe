@@ -19,9 +19,12 @@ export interface AuthChallenge {
 export interface CompleteLoginRequest {
   challengeId: string,
   signatureBase64: string
+  deviceId: string
 }
 
 export interface InitLoginRequest {
   username: string
 }
+
+
 

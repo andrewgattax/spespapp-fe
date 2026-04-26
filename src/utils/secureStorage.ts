@@ -90,7 +90,7 @@ export async function authenticate(prompt = "Authenticate to continue"): Promise
  * Authentication is NOT required for writes by default — only for reads.
  * Pass `skipAuth: false` to require auth before writing too.
  */
-export async function setItem(
+export async function setSecureItem(
   key: string,
   value: string,
   options: SecureStorageOptions = {}
@@ -114,7 +114,7 @@ export async function setItem(
  * @returns The stored string, or `null` if the key doesn't exist.
  * @throws  If authentication fails or is cancelled.
  */
-export async function getItem(
+export async function getSecureItem(
   key: string,
   options: SecureStorageOptions = {}
 ): Promise<string | null> {
@@ -136,7 +136,7 @@ export async function getItem(
  *
  * @throws If authentication fails or is cancelled.
  */
-export async function deleteItem(
+export async function deleteSecureItem(
   key: string,
   options: SecureStorageOptions = {}
 ): Promise<void> {
@@ -157,12 +157,12 @@ export async function deleteItem(
 /**
  * Store a JSON-serialisable object. Auth not required for writes.
  */
-export async function setObject<T>(
+export async function setSecureObject<T>(
   key: string,
   value: T,
   options?: SecureStorageOptions
 ): Promise<void> {
-  await setItem(key, JSON.stringify(value), options);
+  await setSecureItem(key, JSON.stringify(value), options);
 }
 
 /**
@@ -170,11 +170,11 @@ export async function setObject<T>(
  *
  * @returns The parsed object, or `null` if the key doesn't exist.
  */
-export async function getObject<T>(
+export async function getSecureObject<T>(
   key: string,
   options?: SecureStorageOptions
 ): Promise<T | null> {
-  const raw = await getItem(key, options);
+  const raw = await getSecureItem(key, options);
   if (raw === null) return null;
   return JSON.parse(raw) as T;
 }

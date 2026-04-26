@@ -24,3 +24,11 @@ export async function removeItem(key: string): Promise<void> {
     console.error(`Error removing item "${key}":`, error);
   }
 }
+
+export async function multiRemoveItem(keys: string[]): Promise<void> {
+  try {
+    await AsyncStorage.multiRemove(keys);
+  } catch (error) {
+    console.error(`Error removing items "${keys.join(', ')}":`, error);
+  }
+}

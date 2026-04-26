@@ -1,8 +1,10 @@
 import axios, { type AxiosInstance, type AxiosError } from 'axios'
 import type { ErrorResponse } from './types'
 import { removeItem } from '@/utils/storage'
-import * as SecureStore from 'expo-secure-store'
-import { getItem, deleteItem } from "@/utils/secureStorage"
+import { getSecureItem, deleteSecureItem } from '@/utils/secureStorage'
+
+// Storage key for authentication token
+const AUTH_TOKEN_KEY = 'auth_token'
 
 export class ApiError extends Error {
   public readonly statusCode: number
@@ -27,7 +29,7 @@ const apiClient: AxiosInstance = axios.create({
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      const token = await getItem('auth_token', {skipAuth: true})
+      const token = await getSecureItem(AUTH_TOKEN_KEY, {skipAuth: true})
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
       }
@@ -48,9 +50,9 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear user data from AsyncStorage
       await removeItem('user')
-      // Clear JWT from SecureStore
+      // Clear JWT from secure storage
       try {
-        await deleteItem('auth_token', {skipAuth: true})
+        await deleteSecureItem(AUTH_TOKEN_KEY, {skipAuth: true})
       } catch (e) {
         console.error('Error clearing token:', e)
       }
