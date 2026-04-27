@@ -1,11 +1,16 @@
-import React, {useMemo} from 'react';
-import {View, StyleSheet, Text, TextInput, Pressable, TouchableOpacity} from "react-native";
+import React, {useMemo, useState} from 'react';
+import {View, StyleSheet, Text, TextInput, Pressable, TouchableOpacity, ActivityIndicator} from "react-native";
 
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {useTheme} from "@/hooks/use-theme";
 
 import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons"
 import {Spacing} from "@/constants/theme";
+import {ApiError, userService} from "@/api";
+import {useUser} from "@/context/UserContext";
+import {router} from "expo-router";
+import ConfigureDevice from "@/app/configure-device";
+import {Button} from "@/components/button";
 
 
 function Newlogin() {
@@ -39,8 +44,27 @@ function Newlogin() {
     }
   }), [theme])
 
-  const onPressed = () => {
-    console.log("porcodio")
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const {loadFromJwt} = useUser()
+
+  const handleLogin = async () => {
+    setError("");
+    setLoading(true)
+    try {
+      const response = await userService.login()
+      console.log("Login successful")
+      await loadFromJwt(response.authToken)
+    } catch (e) {
+      if(e instanceof ApiError) {
+        setError(e.payload.message)
+      } else {
+        setError(e instanceof Error ? e.message : "Errore sconosciuto")
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -54,21 +78,22 @@ function Newlogin() {
       </View>
       <Text style={styles.mainTitle} className={""}>SpespApp</Text>
       <Text style={styles.secondTitle}>Compra il cibo per quel coglione.</Text>
+
       <View className={"w-full mt-12 gap-4"}>
-        <TouchableOpacity
-          className={"w-full bg-primary p-6 rounded-2xl"}
-          onPress={onPressed}
-        >
-          <Text className={"text-foreground text-center text-lg font-bold"}>Entra</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          className={"w-full border border-text-muted p-6 rounded-2xl"}
-        >
-          <View className={"flex flex-row justify-center items-center gap-2"}>
-            <MaterialCommunityIcons name={"cellphone-cog"} size={24} color={theme.textMuted}/>
-            <Text className={"text-text-muted text-lg font-bold"}>Configura Dispositivo</Text>
-          </View>
-        </TouchableOpacity>
+        {error && (
+          <Text className={"text-center text-destructive"} >{error}</Text>
+        )}
+        <Button
+          title="Entra"
+          onPress={handleLogin}
+          loading={loading}
+        />
+        <Button
+          title="Configura"
+          onPress={() => {router.push("/configure-device")}}
+          variant="outlined"
+          icon={<MaterialCommunityIcons name={"cellphone-cog"} size={24} color={theme.textMuted}/>}
+        />
       </View>
     </View>
   );

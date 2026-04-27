@@ -4,7 +4,6 @@ import { Stack } from 'expo-router';
 
 import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/theme';
-import LoginScreen from '@/app/login';
 import Newlogin from "@/app/newlogin";
 
 export default function AuthGuard() {
@@ -23,7 +22,7 @@ export default function AuthGuard() {
   }
 
   // When authenticated, render the Expo Router file-based routes
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return <Stack />;
 }
 
 const styles = StyleSheet.create({

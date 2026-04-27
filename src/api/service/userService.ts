@@ -1,6 +1,6 @@
 import {ApiError, post, put} from '../client'
 import { LoginResponse, AuthChallenge, CompleteLoginRequest } from "../types"
-import { getPrivateKey, getDeviceId } from "@/utils/keyManager";
+import {getPrivateKey, getDeviceId, getUsername} from "@/utils/keyManager";
 import crypto from 'react-native-quick-crypto';
 import { Buffer } from 'buffer';
 
@@ -38,7 +38,10 @@ class UserService {
     }
   }
 
-  async login(username: string) {
+  async login() {
+
+    const username = await getUsername();
+
     // Step 1: Initialize login and get challenge
     const challenge = await post<AuthChallenge>("/auth/login/init", {username});
 
@@ -46,6 +49,10 @@ class UserService {
     const signatureBase64 = await this.signChallenge(challenge);
 
     const deviceId = await getDeviceId(true);
+
+    if(!deviceId) {
+      throw new Error("Failed to get device ID");
+    }
 
     // Step 3: Complete login with the signature
     const completeRequest: CompleteLoginRequest = {

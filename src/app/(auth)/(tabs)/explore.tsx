@@ -8,7 +8,7 @@ import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useUser } from '@/context/UserContext';
-import { setItem, getItem } from "@/utils/secureStorage"
+import { setSecureItem, getSecureItem } from "@/utils/secureStorage"
 
 export default function TabTwoScreen() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -18,7 +18,7 @@ export default function TabTwoScreen() {
   const [success, setSuccess] = useState("");
 
   const setSecure = async () => {
-    await setItem("secureItem", "sesso", {
+    await setSecureItem("secureItem", "sesso", {
       authPrompt: "Sesso protected",
       skipAuth: false
     })
@@ -26,7 +26,7 @@ export default function TabTwoScreen() {
   }
 
   const getSecure = async () => {
-    const value = await getItem("secureItem", {
+    const value = await getSecureItem("secureItem", {
       authPrompt: "Prendi il sesso",
       skipAuth: false
     })

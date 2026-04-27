@@ -12,6 +12,7 @@ module.exports = {
         primary: 'var(--color-primary)',
         secondary: 'var(--color-secondary)',
         accent: 'var(--color-accent)',
+        destructive: 'var(--color-destructive)',
         background: {
           DEFAULT: 'var(--color-background)',
           element: 'var(--color-background-element)',

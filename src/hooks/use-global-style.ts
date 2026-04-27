@@ -9,7 +9,7 @@ export function useGlobalStyles() {
     pageContainer: {
       flex: 1,
       backgroundColor: theme.background,
-      paddingHorizontal: Spacing.four
+      paddingHorizontal: Spacing.five
     }
   });
 }
