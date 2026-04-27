@@ -19,6 +19,7 @@ export const Colors = {
     backgroundSelected: '#E0E1E6',
     textSecondary: '#E2E8F1',
     textMuted: '#60646C',
+    destructive: "#ff4c20"
   },
   dark: {
     text: '#ffffff',
@@ -31,6 +32,7 @@ export const Colors = {
     backgroundSelected: '#2E3135',
     textSecondary: '#E2E8F1',
     textMuted: '#B0B4BA',
+    destructive: "#ff4c20"
   },
 } as const;
 

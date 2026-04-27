@@ -34,9 +34,12 @@ export function Button({
   const theme = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     button: {
-      backgroundColor: variant === 'filled' ? theme.primary : theme.background,
+      backgroundColor: disabled
+        ? theme.textMuted + 90
+        : variant === 'filled'
+          ? theme.primary
+          : theme.background,
       borderRadius: 16,
-      opacity: disabled ? 0.5 : 1,
       ...(variant === 'outlined' && {
         borderWidth: 1,
         borderColor: theme.textMuted + '30',

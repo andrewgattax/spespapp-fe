@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import { Stack } from 'expo-router';
+import {router, Stack} from 'expo-router';
 
 import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/theme';
-import Newlogin from "@/app/newlogin";
 
 export default function AuthGuard() {
   const { user, isLoading } = useUser();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace('/newlogin');
+    }
+  }, [user, isLoading]);
 
   if (isLoading) {
     return (
@@ -15,10 +20,6 @@ export default function AuthGuard() {
         <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
-  }
-
-  if (!user) {
-    return <Newlogin />;
   }
 
   // When authenticated, render the Expo Router file-based routes

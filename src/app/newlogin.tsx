@@ -25,7 +25,7 @@ function Newlogin() {
     mainIconContainer: {
       backgroundColor: theme.secondary,
       padding: Spacing.four,
-      borderRadius: Spacing.four
+      borderRadius: Spacing.five + 10
     },
     mainTitle: {
       fontSize: Spacing.five,
@@ -47,7 +47,7 @@ function Newlogin() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const {loadFromJwt} = useUser()
+  const {loadFromJwt, user} = useUser()
 
   const handleLogin = async () => {
     setError("");
@@ -56,7 +56,9 @@ function Newlogin() {
       const response = await userService.login()
       console.log("Login successful")
       await loadFromJwt(response.authToken)
+      router.replace("/")
     } catch (e) {
+      console.error(e)
       if(e instanceof ApiError) {
         setError(e.payload.message)
       } else {
