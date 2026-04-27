@@ -1,28 +1,20 @@
 import React, {useMemo, useState} from 'react';
 import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
   View
 } from "react-native";
 import {MaterialCommunityIcons} from "@expo/vector-icons";
-import {useSafeAreaInsets} from "react-native-safe-area-context";
-import {useGlobalStyles} from "@/hooks/use-global-style";
+import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {useTheme} from "@/hooks/use-theme";
 import {lineHeight, Spacing} from "@/constants/theme";
-import {router} from "expo-router";
 
 function ConfigureDevice() {
   const [username, setUsername] = useState("");
   const [deviceName, setDeviceName] = useState("");
 
-  const safeAreaInsets = useSafeAreaInsets();
-  const globalStyle = useGlobalStyles();
   const theme = useTheme();
   const styles = useMemo(() => StyleSheet.create({
     container: {
@@ -32,7 +24,7 @@ function ConfigureDevice() {
     scrollView: {
       paddingHorizontal: Spacing.four,
       paddingTop: Spacing.six,
-      paddingBottom: Spacing.four,
+      paddingBottom: Spacing.six,
       justifyContent: "flex-start",
       alignItems: "center",
     },
@@ -98,60 +90,55 @@ function ConfigureDevice() {
   }), [theme])
 
   return (
-    <KeyboardAvoidingView
+    <KeyboardAwareScrollView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      // keyboardVerticalOffset={Platform.OS === 'ios' ? safeAreaInsets.top + 50 : 0}
+      contentContainerStyle={[styles.scrollView]}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      bottomOffset={60}
     >
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={[styles.scrollView]}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.mainIconContainer}>
-          <MaterialCommunityIcons
-            name={"cellphone-cog"}
-            color={theme.textMuted}
-            size={64}
-          />
-        </View>
-        <Text style={styles.mainTitle} className={"text-center"}>Configura Dispositivo</Text>
-        <Text style={styles.secondTitle}>Inserisci i tuoi dati per la configurazione.</Text>
+      <View style={styles.mainIconContainer}>
+        <MaterialCommunityIcons
+          name={"cellphone-cog"}
+          color={theme.textMuted}
+          size={64}
+        />
+      </View>
+      <Text style={styles.mainTitle} className={"text-center"}>Configura Dispositivo</Text>
+      <Text style={styles.secondTitle}>Inserisci i tuoi dati per la configurazione.</Text>
 
-        <View className={"w-full mt-12 flex gap-4"}>
-          <View style={styles.inputContainer} className={"flex"}>
-            <Text style={styles.inputLabel}>Username</Text>
-            <View style={styles.inputWrapper} className={"w-full"}>
-              <TextInput
-                style={styles.input}
-                className={"w-full"}
-                value={username}
-                onChangeText={setUsername}
-                placeholderTextColor={theme.textMuted + 50}
-                placeholder="e.g. coglionefrocio"
-                autoCapitalize="none"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputContainer} className={"flex"}>
-            <Text style={styles.inputLabel}>Device Name</Text>
-            <View style={styles.inputWrapper} className={"w-full"}>
-              <TextInput
-                style={styles.input}
-                className={"w-full"}
-                value={deviceName}
-                onChangeText={setDeviceName}
-                placeholderTextColor={theme.textMuted + 50}
-                placeholder="e.g. iPhone di coglionefrocio"
-                autoCapitalize="none"
-              />
-            </View>
+      <View className={"w-full gap-4"}>
+        <View style={styles.inputContainer} className={"flex"}>
+          <Text style={styles.inputLabel}>Username</Text>
+          <View style={styles.inputWrapper} className={"w-full"}>
+            <TextInput
+              style={styles.input}
+              className={"w-full"}
+              value={username}
+              onChangeText={setUsername}
+              placeholderTextColor={theme.textMuted + 50}
+              placeholder="e.g. coglionefrocio"
+              autoCapitalize="none"
+            />
           </View>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        <View style={styles.inputContainer} className={"flex"}>
+          <Text style={styles.inputLabel}>Device Name</Text>
+          <View style={styles.inputWrapper} className={"w-full"}>
+            <TextInput
+              style={styles.input}
+              className={"w-full"}
+              value={deviceName}
+              onChangeText={setDeviceName}
+              placeholderTextColor={theme.textMuted + 50}
+              placeholder="e.g. iPhone di coglionefrocio"
+              autoCapitalize="none"
+            />
+          </View>
+        </View>
+      </View>
+    </KeyboardAwareScrollView>
   );
 }
 
