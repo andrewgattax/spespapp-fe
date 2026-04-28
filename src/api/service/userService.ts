@@ -1,5 +1,5 @@
 import {ApiError, post, put} from '../client'
-import { LoginResponse, AuthChallenge, CompleteLoginRequest } from "../types"
+import {LoginResponse, AuthChallenge, CompleteLoginRequest, UpdateDeviceIdRequest} from "../types"
 import {getPrivateKey, getDeviceId, getUsername} from "@/utils/keyManager";
 import crypto from 'react-native-quick-crypto';
 import { Buffer } from 'buffer';
@@ -64,7 +64,7 @@ class UserService {
     return post<LoginResponse>("/auth/login/complete", completeRequest);
   }
 
-  async updateDeviceId(data: any) {
+  async updateDeviceId(data: UpdateDeviceIdRequest) {
     return put<void>("/auth/device-id", data)
   }
 

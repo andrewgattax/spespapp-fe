@@ -9,15 +9,16 @@ interface PageHeroProps {
   icon: ReactNode;
   title: string;
   subtitle?: string | ReactNode;
-  variant?: PageHeroVariant;
+  borderColor?: string;
+  backgroundColor?: string;
 }
 
-export function PageHero({icon, title, subtitle, variant = "muted"}: PageHeroProps) {
+export function PageHero({icon, title, subtitle, borderColor, backgroundColor}: PageHeroProps) {
   const theme = useTheme();
   const styles = StyleSheet.create({
     mainIconContainer: {
-      backgroundColor: variant === "primary" ? theme.secondary + 50 : theme.textSecondary + 50,
-      borderColor: variant === "primary" ? theme.secondary : theme.textSecondary,
+      backgroundColor: backgroundColor || theme.textSecondary + 50,
+      borderColor: borderColor || theme.textSecondary,
       borderWidth: 1,
       shadowColor: "black",
       shadowOpacity: 0.1,
@@ -30,14 +31,14 @@ export function PageHero({icon, title, subtitle, variant = "muted"}: PageHeroPro
       borderRadius: Spacing.five + 10
     },
     mainTitle: {
-      fontSize: Spacing.four,
+      fontSize: Spacing.four + 6,
       fontWeight: "600",
-      marginTop: variant === "primary" ? Spacing.four : Spacing.five,
+      marginTop: Spacing.four,
       color: theme.text,
       textAlign: "center"
     },
     secondTitle: {
-      marginTop: variant === "primary" ? Spacing.one : Spacing.two,
+      marginTop: Spacing.one,
       maxWidth: 256,
       textAlign: "center",
       lineHeight: lineHeight.big,

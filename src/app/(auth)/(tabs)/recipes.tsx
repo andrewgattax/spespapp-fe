@@ -15,13 +15,7 @@ function Recipes() {
       flex: 1,
       backgroundColor: theme.background
     }}>
-      <ScrollView style={{
-        flex: 1
-      }}>
-        <Text style={{
-          marginTop: 500
-        }}>Diocane</Text>
-      </ScrollView>
+
       <Text className={"mt-24"}>Sos</Text>
     </View>
   );

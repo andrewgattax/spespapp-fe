@@ -49,7 +49,7 @@ function CompleteConfiguration() {
   };
 
   const handleContinue = () => {
-    router.replace("/newlogin");
+    router.replace("/login");
   };
 
   return (
@@ -62,9 +62,9 @@ function CompleteConfiguration() {
             Il tuo dispositivo è stato configurato per <Text style={{fontWeight: "bold"}}>{username}</Text>, una nuova coppia di chiavi è stata generata
           </>
         }
-        variant="muted"
+        borderColor={theme.secondary}
+        backgroundColor={theme.secondary + 50}
       />
-
       <View style={globalStyle.colContainer}>
         <Button
           title="Condividi chiave"

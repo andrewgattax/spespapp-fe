@@ -104,7 +104,6 @@ export function UserProvider({children}: { children: ReactNode }) {
     try {
       setUser(null);
       await removeItem("user");
-      // Clear JWT from secure storage
       await deleteSecureItem(AUTH_TOKEN_KEY, { skipAuth: true });
     } catch (error) {
       console.error("Error during logout:", error);

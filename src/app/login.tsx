@@ -9,12 +9,10 @@ import {Spacing} from "@/constants/theme";
 import {ApiError, userService} from "@/api";
 import {useUser} from "@/context/UserContext";
 import {router} from "expo-router";
-import ConfigureDevice from "@/app/configure-device";
 import {Button} from "@/components/button";
 
 
-function Newlogin() {
-
+function Login() {
   const globalStyle = useGlobalStyles();
   const theme = useTheme();
   const styles = useMemo(() => StyleSheet.create({
@@ -108,4 +106,4 @@ function Newlogin() {
 }
 
 
-export default Newlogin;
+export default Login;

@@ -7,14 +7,14 @@ import {
   TextInput,
   View
 } from "react-native";
-import {Entypo, MaterialCommunityIcons} from "@expo/vector-icons";
+import {Entypo, Feather, MaterialCommunityIcons} from "@expo/vector-icons";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {useTheme} from "@/hooks/use-theme";
 import {lineHeight, Spacing} from "@/constants/theme";
 import {Button} from "@/components/button";
 import {PageHero} from "@/components/page-hero";
 import {
-  generateKeyPair,
+  generateKeyPair, getDeviceId,
   hasKeys,
   storeDeviceId,
   storePrivateKey,
@@ -25,21 +25,21 @@ import {useUser} from "@/context/UserContext";
 import {router} from "expo-router";
 import {SubPageHeader} from "@/components/subpage-header";
 import {useGlobalStyles} from "@/hooks/use-global-style";
+import {userService} from "@/api";
 
-function ConfigureDevice() {
-  const [username, setUsername] = useState("");
+function ResetDeviceName() {
   const [deviceName, setDeviceName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false)
   const [disabled, setDisabled] = useState(true)
 
   useEffect(() => {
-    if(username.trim() && deviceName.trim()) {
+    if(deviceName.trim()) {
       setDisabled(false)
     } else {
       setDisabled(true)
     }
-  }, [username, deviceName]);
+  }, [deviceName]);
 
   const {checkRegistrationStatus} = useUser()
 
@@ -108,68 +108,33 @@ function ConfigureDevice() {
     }
   }), [theme])
 
+  useEffect(() => {
+    const loadData = async () => {
+      let deviceId = await getDeviceId(true)
+      setDeviceName(deviceId || "")
+    }
+    loadData();
+  }, []);
+
   const handleConfirm = async () => {
-    if (!username.trim()) {
-      setError('Please enter a username');
-      return;
-    }
-
-    if (!deviceName.trim()) {
-      setError('Please enter a device ID');
-      return;
-    }
-
     try {
       setLoading(true);
       setError('');
 
-      // Check if keys already exist
-      const keysExist = await hasKeys();
-      if (keysExist) {
-        // Ask for confirmation to overwrite existing keys
-        const shouldContinue = await new Promise<boolean>((resolve) => {
-          Alert.alert(
-            'Già registrato',
-            'Hai gia delle chiavi registrate, vuoi rigenerarle?',
-            [
-              {
-                text: 'Annulla',
-                style: 'cancel',
-                onPress: () => resolve(false),
-              },
-              {
-                text: 'Rigenera',
-                style: 'destructive',
-                onPress: () => resolve(true),
-              },
-            ]
-          );
-        });
+      const previousDeviceId = await getDeviceId(true);
 
-        if (!shouldContinue) {
-          return;
-        }
-      }
-
-      // Generate RSA key pair
-      const keys = await generateKeyPair();
-
-      // Store private key securely
-      await storePrivateKey(keys.private);
-
-      // Store public key locally
-      await storePublicKey(keys.publicBase64);
-
-      // Store username
-      await storeUsername(username.trim());
+      await userService.updateDeviceId({
+        previousDeviceId: previousDeviceId!,
+        newDeviceId: deviceName
+      })
 
       // Store device ID
       await storeDeviceId(deviceName.trim(), true);
 
-      // Show success state
-      await storePublicKey(keys.publicBase64);
       await checkRegistrationStatus();
-      router.replace("/complete-configuration");
+
+      router.replace("/user-settings");
+
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ma dioporco');
     } finally {
@@ -179,7 +144,7 @@ function ConfigureDevice() {
 
   return (
     <>
-      <SubPageHeader title={"Configura"} />
+      <SubPageHeader title={"Nome Dispositivo"} />
       <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={[styles.scrollView]}
@@ -188,29 +153,17 @@ function ConfigureDevice() {
       bottomOffset={60}
     >
       <PageHero
-        icon={<Entypo name={"cog"} color={theme.textMuted} size={64} />}
-        title="Configura Dispositivo"
-        subtitle={!error ? "Inserisci i tuoi dati per la configurazione." : undefined}
+        icon={<Feather name={"smartphone"} size={64} color={"#2B7EFF"} />}
+        title="Nome Dispositivo"
+        subtitle={!error ? "Cambia il nome del tuo dispositivo." : undefined}
+        borderColor={"#2B7EFF" + 50}
+        backgroundColor={"#2B7EFF" + 20}
       />
       {error && (
         <Text style={styles.errorTitle}>{error}</Text>
       )}
 
       <View style={globalStyles.colContainer}>
-        <View style={styles.inputContainer}>
-          <Text style={styles.inputLabel}>Username</Text>
-          <View style={styles.inputWrapper}>
-            <TextInput
-              style={styles.input}
-              value={username}
-              onChangeText={setUsername}
-              placeholderTextColor={theme.textMuted + 50}
-              placeholder="e.g. coglionefrocio"
-              autoCapitalize="none"
-            />
-          </View>
-        </View>
-
         <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Device Name</Text>
           <View style={styles.inputWrapper}>
@@ -227,10 +180,10 @@ function ConfigureDevice() {
       </View>
 
       <View style={globalStyles.colContainer}>
-        <Button title={"Conferma"} onPress={handleConfirm} loading={loading} disabled={disabled}></Button>
+        <Button title={"Conferma"} onPress={handleConfirm} variant={"filled"} primaryColor={"#2B7EFF"} loading={loading} disabled={disabled}></Button>
       </View>
     </KeyboardAwareScrollView></>
   );
 }
 
-export default ConfigureDevice;
+export default ResetDeviceName;

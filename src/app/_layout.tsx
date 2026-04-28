@@ -13,7 +13,7 @@ export default function TabLayout() {
         <Stack screenOptions={{
           headerShown: false
         }}>
-          <Stack.Screen name="newlogin"/>
+          <Stack.Screen name="login"/>
           <Stack.Screen name="configure-device"/>
           <Stack.Screen name="complete-configuration"/>
         </Stack>

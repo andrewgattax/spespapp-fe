@@ -9,6 +9,7 @@ import {PageHero} from "@/components/page-hero";
 import {useUser} from "@/context/UserContext";
 import {ButtonCard, ButtonCardGroup} from "@/components/button-card";
 import {Button} from "@/components/button";
+import {router} from "expo-router";
 
 function UserSettings() {
   const theme = useTheme();
@@ -35,6 +36,8 @@ function UserSettings() {
 
   }), [theme]);
 
+  const {logout} = useUser()
+
   return (
     <>
       <SubPageHeader title={"Impostazioni"}/>
@@ -49,7 +52,8 @@ function UserSettings() {
           icon={<MaterialCommunityIcons name={"account-cog"} color={theme.primary} size={64} />}
           title={user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : "Utente"}
           subtitle="Impostazioni e Sicurezza"
-          variant="primary"
+          borderColor={theme.secondary}
+          backgroundColor={theme.secondary + 50}
         />
         <View style={{
           width: "100%",
@@ -60,7 +64,7 @@ function UserSettings() {
           <ButtonCard
             icon={<Feather name={"smartphone"} size={20} color={"#2B7EFF"} />}
             text="Nome dispositivo"
-            onPress={() => {}}
+            onPress={() => {router.push("/reset-device-name")}}
             showArrow={true}
           />
          <Text style={styles.label}>Chiavi di sicurezza</Text>
@@ -93,7 +97,7 @@ function UserSettings() {
             variant={"outlined"}
             icon={<MaterialIcons name={"logout"} size={24} color={theme.textMuted}/>}
             title={"Logout"}
-            onPress={() => {}}
+            onPress={logout}
           />
         </View>
       </KeyboardAwareScrollView>

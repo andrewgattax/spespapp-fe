@@ -14,11 +14,8 @@ export default function AuthLayout() {
         <Stack screenOptions={{
           headerShown: false
         }}>
-          <Stack.Screen name="(tabs)" options={{ title: '' }} />
-          <Stack.Screen name="settings"  />
-          <Stack.Screen name="about"  />
-          <Stack.Screen name="device-id"  />
           <Stack.Screen name="user-settings" />
+          <Stack.Screen name="reset-device-name" />
         </Stack>
       </AuthGuard>
     </>

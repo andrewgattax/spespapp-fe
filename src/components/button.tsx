@@ -18,6 +18,8 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   variant?: ButtonVariant;
+  primaryColor?: string;
+  invertedTextColor?: boolean
   icon?: React.ReactNode;
   fullWidth?: boolean;
 }
@@ -28,6 +30,8 @@ export function Button({
   disabled = false,
   loading = false,
   variant = 'filled',
+  invertedTextColor = false,
+  primaryColor,
   icon,
   fullWidth = true,
 }: ButtonProps) {
@@ -37,7 +41,7 @@ export function Button({
       backgroundColor: disabled
         ? theme.textMuted + 90
         : variant === 'filled'
-          ? theme.primary
+          ? (primaryColor || theme.primary)
           : theme.background,
       borderRadius: 16,
       ...(variant === 'outlined' && {
@@ -66,7 +70,7 @@ export function Button({
       gap: Spacing.two,
     },
     text: {
-      color: variant === 'filled' ? theme.foreground : theme.textMuted,
+      color: variant === 'filled' ? (invertedTextColor ? theme.text : theme.foreground) : theme.textMuted,
       fontSize: 18,
       fontWeight: '600',
       textAlign: 'center',
