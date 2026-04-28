@@ -169,6 +169,7 @@ function ConfigureDevice() {
       // Show success state
       await storePublicKey(keys.publicBase64);
       await checkRegistrationStatus();
+      console.log("Public Key: ", keys.publicBase64)
       router.replace("/complete-configuration");
     } catch (e) {
       setError(e instanceof Error ? e.message : 'ma dioporco');

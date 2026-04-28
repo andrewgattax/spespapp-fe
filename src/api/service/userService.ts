@@ -48,6 +48,8 @@ class UserService {
 
     const username = await getUsername();
 
+    console.log()
+
     // Step 1: Initialize login and get challenge
     const challenge = await post<AuthChallenge>("/auth/login/init", {username});
 

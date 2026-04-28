@@ -9,7 +9,7 @@ import {router} from "expo-router";
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
-  children: ReactNode;
+  children?: ReactNode;
   onProfilePress?: () => void;
 }
 
@@ -36,7 +36,7 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
     },
     headerMainTitle: {
       fontSize: Spacing.four + 5,
-      fontWeight: "bold",
+      fontWeight: "800",
       color: theme.text,
     },
     headerSubtitle: {

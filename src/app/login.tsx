@@ -59,7 +59,7 @@ function Login() {
     setLoading(true)
     try {
       const response = await userService.login()
-      console.log("Login successful")
+      console.log("Login successful", response.authToken)
       await loadFromJwt(response.authToken)
       router.replace("/")
     } catch (e) {

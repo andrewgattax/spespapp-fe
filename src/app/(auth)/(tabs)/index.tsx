@@ -23,11 +23,6 @@ export default function Lista() {
       backgroundColor: theme.textSecondary + 20,
       borderWidth: 1,
       borderColor: theme.textMuted + '30',
-      ...Platform.select({
-        android: {
-          elevation: 5,
-        }
-      })
     },
     inputContainer: {
       gap: Spacing.two

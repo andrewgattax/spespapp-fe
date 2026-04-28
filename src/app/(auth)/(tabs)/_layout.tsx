@@ -8,11 +8,12 @@ export default function TabLayout() {
   return (
     <NativeTabs
       labelStyle={{
-        default: { color: theme.text },
+        default: { color: theme.foreground },
         selected: { color: theme.primary }
       }}
       iconColor={{
         selected: theme.primary,
+        default: theme.foreground
       }}
     >
       <NativeTabs.Trigger name="index">
