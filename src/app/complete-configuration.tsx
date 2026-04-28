@@ -5,7 +5,7 @@ import {useGlobalStyles} from "@/hooks/use-global-style";
 import {useTheme} from "@/hooks/use-theme";
 
 import {MaterialCommunityIcons} from "@expo/vector-icons";
-import {getUsername, getPublicKeyBase64} from "@/utils/keyManager";
+import {getUsername, getPublicKeyBase64, getDeviceId} from "@/utils/keyManager";
 import {router} from "expo-router";
 import {Button} from "@/components/button";
 import * as Clipboard from 'expo-clipboard';
@@ -14,13 +14,16 @@ import {PageHero} from "@/components/page-hero";
 function CompleteConfiguration() {
   const [username, setUsername] = useState<string>("");
   const [publicKey, setPublicKey] = useState<string>("");
+  const [deviceId, setDeviceId] = useState<string>("");
 
   useEffect(() => {
     const loadData = async () => {
       const storedUsername = await getUsername();
+      const storedDeviceId = await getDeviceId(true);
       const storedPublicKey = await getPublicKeyBase64();
       if (storedUsername) setUsername(storedUsername);
       if (storedPublicKey) setPublicKey(storedPublicKey);
+      if (storedDeviceId) setDeviceId(storedDeviceId)
     };
     loadData();
   }, []);
@@ -37,7 +40,7 @@ function CompleteConfiguration() {
   const handleShareKey = async () => {
     if (publicKey) {
       await Clipboard.setStringAsync(publicKey);
-      const message = "tieni coglione \n" + publicKey
+      const message = `Ciao coglione! Sono ${username}, il mio device si chiama ${deviceId} e questa è la mia chiave: \n ${publicKey}`
       const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
       const canOpen = await Linking.canOpenURL(url);
       if (canOpen) {

@@ -1,5 +1,11 @@
-import {ApiError, post, put} from '../client'
-import {LoginResponse, AuthChallenge, CompleteLoginRequest, UpdateDeviceIdRequest} from "../types"
+import {ApiError, post, put, del} from '../client'
+import {
+  LoginResponse,
+  AuthChallenge,
+  CompleteLoginRequest,
+  UpdateDeviceIdRequest,
+  UpdatePublicKeyRequest
+} from "../types"
 import {getPrivateKey, getDeviceId, getUsername} from "@/utils/keyManager";
 import crypto from 'react-native-quick-crypto';
 import { Buffer } from 'buffer';
@@ -65,7 +71,15 @@ class UserService {
   }
 
   async updateDeviceId(data: UpdateDeviceIdRequest) {
-    return put<void>("/auth/device-id", data)
+    return put<void>("/auth/config/device-id", data)
+  }
+
+  async updatePublicKey(data: UpdatePublicKeyRequest) {
+    return put<void>("/auth/config/public-key", data)
+  }
+
+  async deleteConfig(deviceId: string) {
+    return del<void>(`/auth/config/${deviceId}`)
   }
 
 }

@@ -31,5 +31,10 @@ export interface UpdateDeviceIdRequest {
   newDeviceId: string
 }
 
+export interface UpdatePublicKeyRequest {
+  publicKeyBase64: string,
+  deviceId: string
+}
+
 
 

@@ -50,6 +50,7 @@ function Login() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const {isRegistered} = useUser()
 
   const {loadFromJwt, user} = useUser()
 
@@ -91,6 +92,7 @@ function Login() {
         )}
         <Button
           title="Entra"
+          disabled={!isRegistered}
           onPress={handleLogin}
           loading={loading}
         />

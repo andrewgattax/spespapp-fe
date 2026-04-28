@@ -1,5 +1,5 @@
-import React, {useMemo} from 'react';
-import {StyleSheet, Text, View} from "react-native";
+import React, {useEffect, useMemo, useState} from 'react';
+import {ActivityIndicator, Alert, Linking, StyleSheet, Text, View} from "react-native";
 import {Entypo, Feather, FontAwesome5, FontAwesome6, MaterialCommunityIcons, MaterialIcons} from "@expo/vector-icons";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {useTheme} from "@/hooks/use-theme";
@@ -10,6 +10,16 @@ import {useUser} from "@/context/UserContext";
 import {ButtonCard, ButtonCardGroup} from "@/components/button-card";
 import {Button} from "@/components/button";
 import {router} from "expo-router";
+import {
+  generateKeyPair, getDeviceId,
+  getPublicKeyBase64,
+  hasKeys, storeDeviceId,
+  storePrivateKey,
+  storePublicKey,
+  storeUsername
+} from "@/utils/keyManager";
+import * as Clipboard from "expo-clipboard";
+import {userService} from "@/api";
 
 function UserSettings() {
   const theme = useTheme();
@@ -36,7 +46,127 @@ function UserSettings() {
 
   }), [theme]);
 
-  const {logout} = useUser()
+  const [regenLoading, setRegenLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
+  const [deviceName, setDeviceName] = useState("")
+  const [publicKey, setPublicKey] = useState("")
+
+  const {logout, checkRegistrationStatus, resetRegistration} = useUser()
+
+
+  useEffect(() => {
+    const loadData = async () => {
+      const publicGay = await getPublicKeyBase64()
+      const deviceGay = await getDeviceId(true);
+      if(deviceGay) {
+        setDeviceName(deviceGay)
+      }
+      if(publicGay) {
+        setPublicKey(publicGay)
+      }
+    }
+    loadData();
+  }, []);
+
+  const handleSharePublicKey = async () => {
+    if (publicKey) {
+      await Clipboard.setStringAsync(publicKey);
+      const message = "tieni coglione \n" + publicKey
+      const url = `whatsapp://send?text=${encodeURIComponent(message)}`;
+      const canOpen = await Linking.canOpenURL(url);
+      if (canOpen) {
+        await Linking.openURL(url);
+      } else {
+        alert("WhatsApp non è installato sul dispositivo.");
+      }
+    }
+  }
+
+  const handleKeyRegen = async () => {
+    setRegenLoading(true)
+    try {
+      // Ask for confirmation to overwrite existing keys
+      const shouldContinue = await new Promise<boolean>((resolve) => {
+        Alert.alert(
+          'Attenzione',
+          'Questa azione è irreversibile e sovrascriverà le chiavi esistenti. Sei sicuro di voler procedere?',
+          [
+            {
+              text: 'Annulla',
+              style: 'cancel',
+              onPress: () => resolve(false),
+            },
+            {
+              text: 'Rigenera',
+              style: 'destructive',
+              onPress: () => resolve(true),
+            },
+          ]
+        );
+      });
+
+      if (!shouldContinue) {
+        return;
+      }
+
+      // Generate RSA key pair
+      const keys = await generateKeyPair();
+
+      await userService.updatePublicKey({
+        deviceId: deviceName!,
+        publicKeyBase64: keys.publicBase64
+      })
+
+      // Store private key securely
+      await storePrivateKey(keys.private);
+
+      // Store public key locally
+      await storePublicKey(keys.publicBase64);
+
+      checkRegistrationStatus();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Errore sconosciuto durante la rigenerazione delle chiavi");
+    } finally {
+      setRegenLoading(false);
+    }
+  }
+
+  const handleResetConfig = async () => {
+    setResetLoading(true)
+    try {
+      const shouldContinue = await new Promise<boolean>((resolve) => {
+        Alert.alert(
+          'Attenzione',
+          'Questa azione è irreversibile, il dispositivo dovrà essere riconfigurato. Sei sicuro di voler procedere?',
+          [
+            {
+              text: 'Annulla',
+              style: 'cancel',
+              onPress: () => resolve(false),
+            },
+            {
+              text: 'Resetta',
+              style: 'destructive',
+              onPress: () => resolve(true),
+            },
+          ]
+        );
+      });
+
+      if (!shouldContinue) {
+        return;
+      }
+
+      await userService.deleteConfig(deviceName!)
+
+      await resetRegistration();
+
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Errore sconosciuto durante la rigenerazione delle chiavi");
+    } finally {
+      setResetLoading(false);
+    }
+  }
 
   return (
     <>
@@ -73,19 +203,27 @@ function UserSettings() {
               iconBackgroundColor={"#FAF5FF"}
               icon={<MaterialCommunityIcons name={"share-variant"} size={20} color={"#AD46FF"} />}
               text="Condividi Chiave Pubblica"
-              onPress={() => {}}
+              onPress={handleSharePublicKey}
             />
             <ButtonCard
               iconBackgroundColor={"#FFFBEA"}
-              icon={<FontAwesome6 name={"arrows-rotate"} size={20} color={"#FD9900"} />}
+              icon={regenLoading ? (
+                <ActivityIndicator size={20} color={"#FD9900"} />
+              ) : (
+                <FontAwesome6 name={"arrows-rotate"} size={20} color={"#FD9900"} />
+              )}
               text="Rigenera Chiave Pubblica"
-              onPress={() => {}}
+              onPress={handleKeyRegen}
             />
             <ButtonCard
               iconBackgroundColor={"#FEF2F3"}
-              icon={<Feather name={"trash"} size={20} color={"#FE6569"} />}
+              icon={resetLoading ? (
+                <ActivityIndicator size={20} color={"#FE6569"} />
+              ) : (
+                <Feather name={"trash"} size={20} color={"#FE6569"} />
+              )}
               text="Resetta Configurazione"
-              onPress={() => {}}
+              onPress={handleResetConfig}
             />
           </ButtonCardGroup>
         </View>
