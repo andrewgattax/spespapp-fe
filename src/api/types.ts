@@ -36,5 +36,20 @@ export interface UpdatePublicKeyRequest {
   deviceId: string
 }
 
+export interface IngredientDTO {
+  id: number,
+  name: string
+}
+
+export interface RecipeDTO {
+  id: number,
+  ingredients: IngredientDTO[]
+}
+
+export interface AddRecipeRequest {
+  string: string,
+  ingredientNames: string[]
+}
+
 
 
