@@ -4,12 +4,12 @@ import {View, StyleSheet, Text, Linking} from "react-native";
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {useTheme} from "@/hooks/use-theme";
 
-import {FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons";
-import {Spacing} from "@/constants/theme";
+import {MaterialCommunityIcons} from "@expo/vector-icons";
 import {getUsername, getPublicKeyBase64} from "@/utils/keyManager";
 import {router} from "expo-router";
 import {Button} from "@/components/button";
 import * as Clipboard from 'expo-clipboard';
+import {PageHero} from "@/components/page-hero";
 
 function CompleteConfiguration() {
   const [username, setUsername] = useState<string>("");
@@ -31,23 +31,6 @@ function CompleteConfiguration() {
     pageContainer: {
       justifyContent: "center",
       alignItems: "center"
-    },
-    mainIconContainer: {
-      backgroundColor: theme.secondary,
-      padding: Spacing.five,
-      borderRadius: Spacing.five + 10
-    },
-    mainTitle: {
-      fontSize: Spacing.five,
-      fontWeight: "600",
-      marginTop: Spacing.five
-    },
-    secondTitle: {
-      marginTop: Spacing.two,
-      maxWidth: 300,
-      textAlign: "center",
-      color: theme.textMuted,
-      fontWeight: "400"
     }
   }), [theme, username]);
 
@@ -71,17 +54,16 @@ function CompleteConfiguration() {
 
   return (
     <View style={[globalStyle.pageContainer, styles.pageContainer]}>
-      <View style={styles.mainIconContainer}>
-        <MaterialCommunityIcons
-          name={"check-circle"}
-          size={40}
-          color={theme.primary}
-        />
-      </View>
-      <Text style={styles.mainTitle}>Letsgo!</Text>
-      <Text style={styles.secondTitle}>
-        Il tuo dispositivo è stato configurato per <Text style={{fontWeight: "bold"}}>{username}</Text>, una nuova coppia di chiavi è stata generata
-      </Text>
+      <PageHero
+        icon={<MaterialCommunityIcons name={"check-circle"} color={theme.primary} size={64} />}
+        title="Letsgo!"
+        subtitle={
+          <>
+            Il tuo dispositivo è stato configurato per <Text style={{fontWeight: "bold"}}>{username}</Text>, una nuova coppia di chiavi è stata generata
+          </>
+        }
+        variant="muted"
+      />
 
       <View className={"w-full mt-12 gap-4"}>
         <Button

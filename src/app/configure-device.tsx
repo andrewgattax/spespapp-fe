@@ -12,6 +12,7 @@ import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {useTheme} from "@/hooks/use-theme";
 import {lineHeight, Spacing} from "@/constants/theme";
 import {Button} from "@/components/button";
+import {PageHero} from "@/components/page-hero";
 import {
   generateKeyPair,
   hasKeys,
@@ -22,6 +23,7 @@ import {
 } from "@/utils/keyManager";
 import {useUser} from "@/context/UserContext";
 import {router} from "expo-router";
+import {SubPageHeader} from "@/components/subpage-header";
 
 function ConfigureDevice() {
   const [username, setUsername] = useState("");
@@ -48,7 +50,7 @@ function ConfigureDevice() {
     },
     scrollView: {
       paddingHorizontal: Spacing.four,
-      paddingTop: Spacing.six,
+      paddingTop: Spacing.four,
       paddingBottom: Spacing.six,
       justifyContent: "flex-start",
       alignItems: "center",
@@ -57,25 +59,6 @@ function ConfigureDevice() {
       justifyContent: "flex-start",
       alignItems: "center",
       paddingTop: Spacing.six,
-    },
-    mainIconContainer: {
-      backgroundColor: theme.textSecondary,
-      padding: Spacing.four,
-      borderRadius: Spacing.five + 10
-    },
-    mainTitle: {
-      fontSize: Spacing.four,
-      fontWeight: "600",
-      marginTop: Spacing.five,
-      color: theme.text
-    },
-    secondTitle: {
-      marginTop: Spacing.two,
-      maxWidth: 256,
-      textAlign: "center",
-      lineHeight: lineHeight.big,
-      color: theme.textMuted,
-      fontWeight: "400"
     },
     errorTitle: {
       marginTop: Spacing.two,
@@ -193,24 +176,22 @@ function ConfigureDevice() {
   }
 
   return (
-    <KeyboardAwareScrollView
+    <>
+      <SubPageHeader title={"Configura"} />
+      <KeyboardAwareScrollView
       style={styles.container}
       contentContainerStyle={[styles.scrollView]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       bottomOffset={60}
     >
-      <View style={styles.mainIconContainer}>
-        <MaterialCommunityIcons
-          name={"cellphone-cog"}
-          color={theme.textMuted}
-          size={64}
-        />
-      </View>
-      <Text style={styles.mainTitle} className={"text-center"}>Configura Dispositivo</Text>
-      {!error ? (
-        <Text style={styles.secondTitle}>Inserisci i tuoi dati per la configurazione.</Text>
-      ) : (
+      <PageHero
+        icon={<MaterialCommunityIcons name={"cellphone-cog"} color={theme.textMuted} size={64} />}
+        title="Configura Dispositivo"
+        subtitle={!error ? "Inserisci i tuoi dati per la configurazione." : undefined}
+        variant="muted"
+      />
+      {error && (
         <Text style={styles.errorTitle}>{error}</Text>
       )}
 
@@ -245,11 +226,11 @@ function ConfigureDevice() {
           </View>
         </View>
       </View>
-      
+
       <View className={"w-full mt-12"}>
         <Button title={"Conferma"} onPress={handleConfirm} loading={loading} disabled={disabled}></Button>
       </View>
-    </KeyboardAwareScrollView>
+    </KeyboardAwareScrollView></>
   );
 }
 

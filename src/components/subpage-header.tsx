@@ -8,12 +8,10 @@ import {router} from "expo-router";
 
 interface PageHeaderProps {
   title: string;
-  subtitle?: string;
-  children: ReactNode;
-  onProfilePress?: () => void;
+  children?: ReactNode;
 }
 
-export function PageHeader({title, subtitle, children, onProfilePress}: PageHeaderProps) {
+export function SubPageHeader({title, children}: PageHeaderProps) {
   const theme = useTheme();
   const safeArea = useSafeAreaInsets();
 
@@ -25,27 +23,21 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
       flexDirection: "column",
       alignItems: "center",
       paddingTop: safeArea.top + Spacing.four,
-      paddingBottom: Spacing.four,
+      paddingBottom: Spacing.four + 4,
       gap: Spacing.three
     },
     headerMain: {
       flexDirection: "row",
-      justifyContent: "space-between",
       alignItems: "center",
-      width: "100%"
+      width: "100%",
+      justifyContent: "center",
+      position: "relative",
     },
-    headerMainTitle: {
-      fontSize: Spacing.four + 5,
-      fontWeight: "bold",
-      color: theme.text,
-    },
-    headerSubtitle: {
-      fontSize: Spacing.two + 4,
-      color: theme.textMuted
-    },
-    userIconContainer: {
+    backButton: {
+      position: "absolute",
+      left: 0,
       backgroundColor: theme.textSecondary + 20,
-      padding: Spacing.two + 4,
+      padding: Spacing.two ,
       borderRadius: Spacing.three,
       shadowColor: "#000",
       shadowOffset: {
@@ -57,21 +49,23 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
       shadowOpacity: 0.15,
       shadowRadius: 1.84,
     },
+    headerMainTitle: {
+      fontSize: Spacing.three,
+      fontWeight: "bold",
+      color: theme.text,
+    },
   });
 
   return (
     <View style={styles.header}>
       <View style={styles.headerMain}>
-        <View>
-          <Text style={styles.headerMainTitle}>{title}</Text>
-          {subtitle && <Text style={styles.headerSubtitle}>{subtitle}</Text>}
-        </View>
         <TouchableOpacity
-          style={styles.userIconContainer}
-          onPress={onProfilePress || (() => router.push("/user-settings"))}
+          style={styles.backButton}
+          onPress={() => router.back()}
         >
-          <Feather name="user" size={24} color={theme.text}/>
+          <Feather name="arrow-left" size={24} color={theme.text}/>
         </TouchableOpacity>
+        <Text style={styles.headerMainTitle}>{title}</Text>
       </View>
       {children}
     </View>

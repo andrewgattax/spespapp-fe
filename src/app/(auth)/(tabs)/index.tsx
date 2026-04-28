@@ -5,6 +5,7 @@ import {lineHeight, Spacing} from "@/constants/theme";
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {Feather} from "@expo/vector-icons"
 import {PageHeader} from "@/components/page-header";
+import {useUser} from "@/context/UserContext";
 
 
 export default function Lista() {
@@ -47,12 +48,15 @@ export default function Lista() {
   }), [theme])
 
   const [searchFilter, setSearchFilter] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { user } = useUser()
+
 
   return (
     <Pressable style={{flex: 1}} onPress={Keyboard.dismiss}>
       <PageHeader
         title="La Lista"
-        subtitle="Hello, username"
+        subtitle={"Hello, " + (user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : "utente")}
       >
         <View style={styles.inputWrapper} className={"w-full"}>
           <Feather name={"search"} size={18} color={theme.textMuted}/>

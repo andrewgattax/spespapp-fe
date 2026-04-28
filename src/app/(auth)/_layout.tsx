@@ -15,9 +15,10 @@ export default function AuthLayout() {
           headerShown: false
         }}>
           <Stack.Screen name="(tabs)" options={{ title: '' }} />
-          <Stack.Screen name="settings" options={{ headerShown: true }} />
-          <Stack.Screen name="about" options={{ headerShown: true }} />
-          <Stack.Screen name="device-id" options={{ headerShown: true }} />
+          <Stack.Screen name="settings"  />
+          <Stack.Screen name="about"  />
+          <Stack.Screen name="device-id"  />
+          <Stack.Screen name="user-settings" />
         </Stack>
       </AuthGuard>
     </>
