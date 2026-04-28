@@ -30,7 +30,8 @@ function Newlogin() {
     mainTitle: {
       fontSize: Spacing.five,
       fontWeight: "600",
-      marginTop: Spacing.five
+      marginTop: Spacing.five,
+      color: theme.text
     },
     secondTitle: {
       marginTop: Spacing.two,

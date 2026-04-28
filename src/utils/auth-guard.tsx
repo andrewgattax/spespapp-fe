@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
-import {router, Stack} from 'expo-router';
+import {router} from 'expo-router';
 
 import { useUser } from '@/context/UserContext';
 import { Colors } from '@/constants/theme';
 
-export default function AuthGuard() {
+export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useUser();
 
   useEffect(() => {
@@ -22,8 +22,8 @@ export default function AuthGuard() {
     );
   }
 
-  // When authenticated, render the Expo Router file-based routes
-  return <Stack />;
+  // When authenticated, render the children (the Stack navigator)
+  return <>{children}</>;
 }
 
 const styles = StyleSheet.create({

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 
@@ -9,6 +9,11 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useUser } from '@/context/UserContext';
 import { setSecureItem, getSecureItem } from "@/utils/secureStorage"
+import theme from "tailwindcss/defaultTheme";
+
+export const options = {
+  headerShown: false,
+};
 
 export default function TabTwoScreen() {
   const safeAreaInsets = useSafeAreaInsets();
@@ -35,16 +40,7 @@ export default function TabTwoScreen() {
   }
 
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: theme.background }]}
-      contentContainerStyle={[
-        styles.contentContainer,
-        {
-          paddingTop: safeAreaInsets.top + Spacing.six,
-          paddingBottom: safeAreaInsets.bottom + Spacing.six,
-        },
-      ]}>
-      <ThemedView style={styles.centerContainer}>
+      <View style={styles.centerContainer}>
         {user ? (
           <ThemedText style={styles.welcomeText} type="subtitle">
             Welcome, {user.username}!
@@ -68,20 +64,7 @@ export default function TabTwoScreen() {
             </ThemedText>
           </ThemedView>
         </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [styles.loginButton, pressed && styles.pressed]}
-          onPress={() => router.push('/settings')}>
-          <ThemedView
-            type="backgroundElement"
-            style={[styles.buttonContent, styles.aboutButtonBackground]}>
-            <ThemedText style={styles.buttonText} type="link">
-              Go to Settings
-            </ThemedText>
-          </ThemedView>
-        </Pressable>
-      </ThemedView>
-    </ScrollView>
+      </View>
   );
 }
 

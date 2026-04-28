@@ -16,7 +16,7 @@ export default function TabLayout() {
       }}
     >
       <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Label>Lista</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/home.png')}
           renderingMode="template"
@@ -30,8 +30,9 @@ export default function TabLayout() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="diocane">
-        <NativeTabs.Trigger.Label>Diocane</NativeTabs.Trigger.Label>
+
+      <NativeTabs.Trigger name="recipes">
+        <NativeTabs.Trigger.Label>Ricette</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"

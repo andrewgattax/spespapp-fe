@@ -66,7 +66,8 @@ function ConfigureDevice() {
     mainTitle: {
       fontSize: Spacing.four,
       fontWeight: "600",
-      marginTop: Spacing.five
+      marginTop: Spacing.five,
+      color: theme.text
     },
     secondTitle: {
       marginTop: Spacing.two,
