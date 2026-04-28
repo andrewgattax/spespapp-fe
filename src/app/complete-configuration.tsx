@@ -65,7 +65,7 @@ function CompleteConfiguration() {
         variant="muted"
       />
 
-      <View className={"w-full mt-12 gap-4"}>
+      <View style={globalStyle.colContainer}>
         <Button
           title="Condividi chiave"
           onPress={handleShareKey}

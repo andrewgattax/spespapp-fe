@@ -58,11 +58,10 @@ export default function Lista() {
         title="La Lista"
         subtitle={"Hello, " + (user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : "utente")}
       >
-        <View style={styles.inputWrapper} className={"w-full"}>
+        <View style={styles.inputWrapper}>
           <Feather name={"search"} size={18} color={theme.textMuted}/>
           <TextInput
             style={styles.input}
-            className={"w-full"}
             value={searchFilter}
             onChangeText={setSearchFilter}
             placeholderTextColor={theme.textMuted + 50}

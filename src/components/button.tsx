@@ -83,7 +83,11 @@ export function Button({
         {loading ? (
           <ActivityIndicator size={28} color={variant === 'filled' ? '#ffffff' : theme.textMuted} />
         ) : (
-          <View className={'flex-row items-center gap-2'}>
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: Spacing.two
+          }}>
             {icon && <View>{icon}</View>}
             <Text style={styles.text}>{title}</Text>
           </View>

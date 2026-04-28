@@ -38,6 +38,11 @@ function Newlogin() {
       color: theme.textMuted,
       fontWeight: "400"
     },
+    errorTitle: {
+      marginTop: Spacing.two,
+      color: theme.destructive,
+      fontWeight: "400"
+    },
     entraButton: {
       backgroundColor: theme.primary,
       width: "100%",
@@ -79,12 +84,12 @@ function Newlogin() {
           color={theme.primary}
         />
       </View>
-      <Text style={styles.mainTitle} className={""}>SpespApp</Text>
+      <Text style={styles.mainTitle}>SpespApp</Text>
       <Text style={styles.secondTitle}>Compra il cibo per quel coglione.</Text>
 
-      <View className={"w-full mt-12 gap-4"}>
+      <View style={globalStyle.colContainer}>
         {error && (
-          <Text className={"text-center text-destructive"} >{error}</Text>
+          <Text style={styles.errorTitle} >{error}</Text>
         )}
         <Button
           title="Entra"

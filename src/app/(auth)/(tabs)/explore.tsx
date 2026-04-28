@@ -9,7 +9,6 @@ import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useUser } from '@/context/UserContext';
 import { setSecureItem, getSecureItem } from "@/utils/secureStorage"
-import theme from "tailwindcss/defaultTheme";
 
 export const options = {
   headerShown: false,

@@ -24,6 +24,7 @@ import {
 import {useUser} from "@/context/UserContext";
 import {router} from "expo-router";
 import {SubPageHeader} from "@/components/subpage-header";
+import {useGlobalStyles} from "@/hooks/use-global-style";
 
 function ConfigureDevice() {
   const [username, setUsername] = useState("");
@@ -43,6 +44,7 @@ function ConfigureDevice() {
   const {checkRegistrationStatus} = useUser()
 
   const theme = useTheme();
+  const globalStyles = useGlobalStyles()
   const styles = useMemo(() => StyleSheet.create({
     container: {
       flex: 1,
@@ -195,13 +197,12 @@ function ConfigureDevice() {
         <Text style={styles.errorTitle}>{error}</Text>
       )}
 
-      <View className={"w-full mt-12 gap-4"}>
-        <View style={styles.inputContainer} className={"flex"}>
+      <View style={globalStyles.colContainer}>
+        <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Username</Text>
-          <View style={styles.inputWrapper} className={"w-full"}>
+          <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              className={"w-full"}
               value={username}
               onChangeText={setUsername}
               placeholderTextColor={theme.textMuted + 50}
@@ -211,12 +212,11 @@ function ConfigureDevice() {
           </View>
         </View>
 
-        <View style={styles.inputContainer} className={"flex"}>
+        <View style={styles.inputContainer}>
           <Text style={styles.inputLabel}>Device Name</Text>
-          <View style={styles.inputWrapper} className={"w-full"}>
+          <View style={styles.inputWrapper}>
             <TextInput
               style={styles.input}
-              className={"w-full"}
               value={deviceName}
               onChangeText={setDeviceName}
               placeholderTextColor={theme.textMuted + 50}
@@ -227,7 +227,7 @@ function ConfigureDevice() {
         </View>
       </View>
 
-      <View className={"w-full mt-12"}>
+      <View style={globalStyles.colContainer}>
         <Button title={"Conferma"} onPress={handleConfirm} loading={loading} disabled={disabled}></Button>
       </View>
     </KeyboardAwareScrollView></>

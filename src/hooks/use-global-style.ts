@@ -10,6 +10,11 @@ export function useGlobalStyles() {
       flex: 1,
       backgroundColor: theme.background,
       paddingHorizontal: Spacing.five
+    },
+    colContainer: {
+      width: "100%",
+      marginTop: Spacing.five,
+      gap: Spacing.four
     }
   });
 }
