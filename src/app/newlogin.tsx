@@ -4,7 +4,7 @@ import {View, StyleSheet, Text, TextInput, Pressable, TouchableOpacity, Activity
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {useTheme} from "@/hooks/use-theme";
 
-import { FontAwesome5, MaterialCommunityIcons } from "@expo/vector-icons"
+import {Entypo, FontAwesome5, MaterialCommunityIcons} from "@expo/vector-icons"
 import {Spacing} from "@/constants/theme";
 import {ApiError, userService} from "@/api";
 import {useUser} from "@/context/UserContext";
@@ -95,7 +95,7 @@ function Newlogin() {
           title="Configura"
           onPress={() => {router.push("/configure-device")}}
           variant="outlined"
-          icon={<MaterialCommunityIcons name={"cellphone-cog"} size={24} color={theme.textMuted}/>}
+          icon={<Entypo name={"cog"} size={24} color={theme.textMuted}/>}
         />
       </View>
     </View>

@@ -7,7 +7,7 @@ import {
   TextInput,
   View
 } from "react-native";
-import {MaterialCommunityIcons} from "@expo/vector-icons";
+import {Entypo, MaterialCommunityIcons} from "@expo/vector-icons";
 import {KeyboardAwareScrollView} from "react-native-keyboard-controller";
 import {useTheme} from "@/hooks/use-theme";
 import {lineHeight, Spacing} from "@/constants/theme";
@@ -186,7 +186,7 @@ function ConfigureDevice() {
       bottomOffset={60}
     >
       <PageHero
-        icon={<MaterialCommunityIcons name={"cellphone-cog"} color={theme.textMuted} size={64} />}
+        icon={<Entypo name={"cog"} color={theme.textMuted} size={64} />}
         title="Configura Dispositivo"
         subtitle={!error ? "Inserisci i tuoi dati per la configurazione." : undefined}
         variant="muted"

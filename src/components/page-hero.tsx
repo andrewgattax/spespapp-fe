@@ -16,12 +16,12 @@ export function PageHero({icon, title, subtitle, variant = "muted"}: PageHeroPro
   const theme = useTheme();
   const styles = StyleSheet.create({
     mainIconContainer: {
-      backgroundColor: variant === "primary" ? theme.secondary + 50 : theme.textSecondary,
-      borderColor: variant === "primary" ? theme.secondary : undefined,
-      borderWidth: variant === "primary" ? 1 : 0,
+      backgroundColor: variant === "primary" ? theme.secondary + 50 : theme.textSecondary + 50,
+      borderColor: variant === "primary" ? theme.secondary : theme.textSecondary,
+      borderWidth: 1,
       shadowColor: "black",
-      shadowOpacity: variant === "primary" ? 0.1 : 0,
-      shadowRadius: variant === "primary" ? 1.80 : 0,
+      shadowOpacity: 0.1,
+      shadowRadius: 1.80,
       shadowOffset: {
         width: 0,
         height: 2
