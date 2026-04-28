@@ -9,7 +9,8 @@ export function useGlobalStyles() {
     pageContainer: {
       flex: 1,
       backgroundColor: theme.background,
-      paddingHorizontal: Spacing.five
+      paddingHorizontal: Spacing.five,
+      paddingTop: Spacing.four
     },
     colContainer: {
       width: "100%",

@@ -17,12 +17,15 @@ const ButtonCardContext = createContext<ButtonCardContextValue | null>(null);
 interface ButtonCardProps {
   icon: React.ReactNode;
   text: string;
+  subtitle?: string;
   onPress: () => void;
   showArrow?: boolean;
   disabled?: boolean;
   onLongPress?: () => void;
   iconBackgroundColor?: string;
   testID?: string;
+  fontSize?: number;
+  fontWeight?: string;
 }
 
 interface ButtonCardGroupProps {
@@ -96,6 +99,9 @@ export function ButtonCard({
   onLongPress,
   iconBackgroundColor = '#EEF6FF',
   testID,
+  fontWeight,
+  fontSize,
+  subtitle
 }: ButtonCardProps) {
   const theme = useTheme();
   const context = useContext(ButtonCardContext);
@@ -141,6 +147,8 @@ export function ButtonCard({
 
     const radiusConfig = borderRadiusConfig[position];
 
+    // @ts-ignore
+    // @ts-ignore
     return StyleSheet.create({
       container: {
         flexDirection: 'row',
@@ -161,10 +169,14 @@ export function ButtonCard({
         ...radiusConfig,
       },
       text: {
-        flex: 1,
-        marginLeft: Spacing.three,
-        fontWeight: '500',
+        //@ts-ignore
+        fontWeight: fontWeight || '500',
+        fontSize: fontSize || Spacing.three,
         color: theme.text,
+      },
+      subtitle: {
+        fontSize: Spacing.two + 6,
+        color: theme.textMuted
       },
       iconContainer: {
         padding: Spacing.two + 4,
@@ -174,6 +186,7 @@ export function ButtonCard({
     });
   }, [theme, position, iconBackgroundColor, disabled]);
 
+
   return (
     <TouchableOpacity
       onPress={onPress}
@@ -182,9 +195,21 @@ export function ButtonCard({
       testID={testID}
       activeOpacity={0.7}
     >
+      {/*@ts-ignore*/}
       <View style={styles.container}>
+        {/*@ts-ignore*/}
         <View style={styles.iconContainer}>{icon}</View>
-        <Text style={styles.text}>{text}</Text>
+        <View style={{
+          alignItems: "flex-start",
+          justifyContent: "center",
+          flex: 1,
+          marginLeft: Spacing.three
+        }}>
+          {/*@ts-ignore*/}
+          <Text style={styles.text}>{text}</Text>
+          {/*@ts-ignore*/}
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        </View>
         {showArrow && (
           <MaterialIcons
             name="arrow-forward-ios"

@@ -52,6 +52,7 @@ export default function Lista() {
       <PageHeader
         title="La Lista"
         subtitle={"Hello, " + (user?.username ? user.username.charAt(0).toUpperCase() + user.username.slice(1) : "utente")}
+        icon={<Feather name="user" size={24} color={theme.text}/>}
       >
         <View style={styles.inputWrapper}>
           <Feather name={"search"} size={18} color={theme.textMuted}/>

@@ -10,10 +10,13 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   children?: ReactNode;
+  icon?: ReactNode,
+  iconBackgroundColor?: string,
+  iconBorderColor?: string
   onProfilePress?: () => void;
 }
 
-export function PageHeader({title, subtitle, children, onProfilePress}: PageHeaderProps) {
+export function PageHeader({title, subtitle, children, onProfilePress, iconBorderColor, iconBackgroundColor, icon}: PageHeaderProps) {
   const theme = useTheme();
   const safeArea = useSafeAreaInsets();
 
@@ -44,7 +47,7 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
       color: theme.textMuted
     },
     userIconContainer: {
-      backgroundColor: theme.textSecondary + 20,
+      backgroundColor: iconBackgroundColor || theme.textSecondary + 20,
       padding: Spacing.two + 4,
       borderRadius: Spacing.three,
       shadowColor: "#000",
@@ -53,7 +56,7 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
         height: 2,
       },
       borderWidth: 1,
-      borderColor: theme.textMuted + '30',
+      borderColor: iconBorderColor || theme.textMuted + '30',
       shadowOpacity: 0.15,
       shadowRadius: 1.84,
     },
@@ -70,7 +73,7 @@ export function PageHeader({title, subtitle, children, onProfilePress}: PageHead
           style={styles.userIconContainer}
           onPress={onProfilePress || (() => router.push("/user-settings"))}
         >
-          <Feather name="user" size={24} color={theme.text}/>
+          {icon}
         </TouchableOpacity>
       </View>
       {children}
