@@ -1,12 +1,13 @@
-import React, {useEffect, useMemo, useState} from 'react';
-import {Pressable, ScrollView, Text, View, StyleSheet, TextInput, Keyboard} from "react-native";
+import React, {useEffect, useMemo, useState, useCallback} from 'react';
+import {Pressable, View, StyleSheet, TextInput, Keyboard} from "react-native";
 import {useTheme} from "@/hooks/use-theme";
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {Spacing} from "@/constants/theme";
 import {PageHeader} from "@/components/page-header";
 import {Feather, MaterialCommunityIcons} from "@expo/vector-icons";
 import {ButtonCard, ButtonCardGroup} from "@/components/button-card";
-import {ApiError, RecipeDTO, recipeService} from "@/api";
+import {RecipeDTO, recipeService} from "@/api";
+import {AnimatedRefreshControl} from "@/components/animated-refresh-control";
 
 
 function Recipes() {
@@ -44,32 +45,30 @@ function Recipes() {
 
   }), [theme])
   const [searchFilter, setSearchFilter] = useState("");
-  const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
 
   const [recipes, setRecipes] = useState<RecipeDTO[]>([])
   const [filteredRecipes, setFilteredRecipes] = useState<RecipeDTO[]>([])
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true)
-      try {
-        const response = await recipeService.getAllRecipes()
-        setRecipes(response)
-        setFilteredRecipes(response)
-      } catch (e) {
-        console.error("Failed to load recipes", e)
-        if(e instanceof ApiError) {
-          setError(e.payload.message)
-        } else {
-          setError("Errore sconosciuto")
-        }
-      } finally {
-        setLoading(false)
-      }
+  const loadRecipes = useCallback(async () => {
+    try {
+      const response = await recipeService.getAllRecipes()
+      setRecipes(response)
+      setFilteredRecipes(response)
+    } catch (e) {
+      console.error("Failed to load recipes", e)
     }
-    loadData();
   }, []);
+
+  useEffect(() => {
+    loadRecipes();
+  }, [loadRecipes]);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadRecipes();
+    setRefreshing(false);
+  }, [loadRecipes]);
 
   useEffect(() => {
     if(searchFilter.trim() === "") {
@@ -102,7 +101,11 @@ function Recipes() {
         </View>
       </PageHeader>
       <View style={globalStyles.pageContainer}>
-      <ScrollView >
+      <AnimatedRefreshControl
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        contentContainerStyle={{paddingBottom: Spacing.four}}
+      >
         <ButtonCardGroup>
           {filteredRecipes.map(recipe => (
             <ButtonCard
@@ -115,7 +118,7 @@ function Recipes() {
               onPress={() => {}} />
           ))}
         </ButtonCardGroup>
-      </ScrollView>
+      </AnimatedRefreshControl>
       </View>
     </Pressable>
   );
