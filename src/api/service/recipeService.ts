@@ -3,12 +3,16 @@ import {get, post} from "../client";
 
 class RecipeService {
 
-    private async getAllRecipes(): Promise<RecipeDTO[]> {
-        return get<RecipeDTO[]>("/auth/recipe");
+    async getAllRecipes(): Promise<RecipeDTO[]> {
+        return get<RecipeDTO[]>("/recipe");
     }
 
-    private async addRecipe(request: AddRecipeRequest): Promise<RecipeDTO> {
-        return post<RecipeDTO>("/auth/recipe", request);
+    async addRecipe(request: AddRecipeRequest): Promise<RecipeDTO> {
+        return post<RecipeDTO>("/recipe", request);
     }
 
 }
+
+const recipeService = new RecipeService();
+
+export {recipeService}

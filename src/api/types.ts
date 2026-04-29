@@ -43,6 +43,7 @@ export interface IngredientDTO {
 
 export interface RecipeDTO {
   id: number,
+  name: string,
   ingredients: IngredientDTO[]
 }
 
