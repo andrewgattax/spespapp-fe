@@ -48,7 +48,7 @@ export interface RecipeDTO {
 }
 
 export interface AddRecipeRequest {
-  string: string,
+  name: string,
   ingredientNames: string[]
 }
 

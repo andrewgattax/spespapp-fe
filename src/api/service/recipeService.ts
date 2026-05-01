@@ -7,6 +7,10 @@ class RecipeService {
         return get<RecipeDTO[]>("/recipe");
     }
 
+    async getRecipeByName(name: string): Promise<RecipeDTO> {
+        return get<RecipeDTO>(`/recipe/${encodeURIComponent(name)}`);
+    }
+
     async addRecipe(request: AddRecipeRequest): Promise<RecipeDTO> {
         return post<RecipeDTO>("/recipe", request);
     }

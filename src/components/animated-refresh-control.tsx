@@ -10,7 +10,9 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import {FontAwesome6, MaterialCommunityIcons} from '@expo/vector-icons';
+import {useTheme} from "@/hooks/use-theme";
+import {Spacing} from "@/constants/theme";
 
 // Only import haptics on native platforms
 let Haptics: any;
@@ -36,13 +38,15 @@ export function AnimatedRefreshControl({
   onRefresh,
   refreshing,
   children,
-  pullThreshold = 100,
+  pullThreshold = 50,
   contentContainerStyle,
 }: AnimatedRefreshControlProps) {
   const scrollY = useSharedValue(0);
   const pullProgress = useSharedValue(0);
   const isPulling = useSharedValue(false);
   const hasTriggeredHaptic = useSharedValue(false);
+
+  const theme = useTheme()
 
   const triggerRefresh = () => {
     'worklet';
@@ -130,8 +134,8 @@ export function AnimatedRefreshControl({
 
     const opacity = interpolate(
       scrollY.value,
-      [-pullThreshold, -pullThreshold / 2, 0],
-      [1, 1, 0],
+      [-pullThreshold * 0.6, -pullThreshold],
+      [0, 1],
       Extrapolation.CLAMP
     );
 
@@ -154,10 +158,10 @@ export function AnimatedRefreshControl({
     <View style={styles.container}>
       {/* Animated refresh indicator */}
       <Animated.View style={[styles.refreshIcon, iconStyle]}>
-        <MaterialCommunityIcons
-          name="food-halal"
-          size={32}
-          color="#009866"
+        <FontAwesome6
+          name="arrows-rotate"
+          size={16}
+          color={theme.accent}
         />
       </Animated.View>
 
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
   },
   refreshIcon: {
     position: 'absolute',
-    top: 20,
+    top: 15,
     left: 0,
     right: 0,
     alignItems: 'center',

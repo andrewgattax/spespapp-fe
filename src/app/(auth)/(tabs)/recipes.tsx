@@ -1,13 +1,15 @@
 import React, {useEffect, useMemo, useState, useCallback} from 'react';
-import {Pressable, View, StyleSheet, TextInput, Keyboard} from "react-native";
+import {Pressable, View, StyleSheet, TextInput, Keyboard, Text} from "react-native";
 import {useTheme} from "@/hooks/use-theme";
 import {useGlobalStyles} from "@/hooks/use-global-style";
 import {Spacing} from "@/constants/theme";
 import {PageHeader} from "@/components/page-header";
 import {Feather, MaterialCommunityIcons} from "@expo/vector-icons";
-import {ButtonCard, ButtonCardGroup} from "@/components/button-card";
-import {RecipeDTO, recipeService} from "@/api";
+import {ButtonCard, ButtonCardGroup, ButtonCardSkeleton} from "@/components/button-card";
+import {Button} from "@/components/button";
+import {ApiError, RecipeDTO, recipeService} from "@/api";
 import {AnimatedRefreshControl} from "@/components/animated-refresh-control";
+import {router} from "expo-router";
 
 
 function Recipes() {
@@ -46,17 +48,27 @@ function Recipes() {
   }), [theme])
   const [searchFilter, setSearchFilter] = useState("");
   const [refreshing, setRefreshing] = useState(false)
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [recipes, setRecipes] = useState<RecipeDTO[]>([])
   const [filteredRecipes, setFilteredRecipes] = useState<RecipeDTO[]>([])
 
   const loadRecipes = useCallback(async () => {
     try {
+      setError("");
       const response = await recipeService.getAllRecipes()
       setRecipes(response)
       setFilteredRecipes(response)
     } catch (e) {
       console.error("Failed to load recipes", e)
+      if (e instanceof ApiError) {
+        setError(e.payload.message);
+      } else {
+        setError(e instanceof Error ? e.message : "Impossibile caricare le ricette");
+      }
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -65,6 +77,7 @@ function Recipes() {
   }, [loadRecipes]);
 
   const handleRefresh = useCallback(async () => {
+    setError("");
     setRefreshing(true);
     await loadRecipes();
     setRefreshing(false);
@@ -104,20 +117,48 @@ function Recipes() {
       <AnimatedRefreshControl
         onRefresh={handleRefresh}
         refreshing={refreshing}
-        contentContainerStyle={{paddingBottom: Spacing.four}}
       >
-        <ButtonCardGroup>
-          {filteredRecipes.map(recipe => (
-            <ButtonCard
-              icon={<MaterialCommunityIcons name="food-halal" size={24} color={theme.accent}/>}
-              text={recipe.name.charAt(0).toUpperCase() + recipe.name.slice(1)}
-              fontWeight={"800"}
-              subtitle={`${recipe.ingredients.length} ingredienti`}
-              showArrow
-              iconBackgroundColor={theme.accent + 10}
-              onPress={() => {}} />
-          ))}
-        </ButtonCardGroup>
+        {loading ? (
+          <ButtonCardGroup>
+            {Array.from({ length: 4 }).map((_, index) => (
+              <ButtonCardSkeleton key={`skeleton-${index}`} />
+            ))}
+          </ButtonCardGroup>
+        ) : error ? (
+          <View style={{padding: Spacing.four, alignItems: 'center', marginTop: Spacing.eight}}>
+            <Text style={{color: theme.destructive, marginBottom: Spacing.three, textAlign: 'center'}}>
+              {error}
+            </Text>
+            <Button
+              title="Riprova"
+              onPress={loadRecipes}
+              variant="outlined"
+            />
+          </View>
+        ) : filteredRecipes.length === 0 ? (
+          <View style={{padding: Spacing.four, alignItems: 'center', flex: 1, justifyContent: 'center', marginTop: Spacing.eight}}>
+            <MaterialCommunityIcons name="food-halal" size={64} color={theme.textMuted} />
+            <Text style={{color: theme.textMuted, marginTop: Spacing.three, fontSize: Spacing.three}}>
+              Nessuna ricetta trovata
+            </Text>
+            <Text style={{color: theme.textMuted, marginTop: Spacing.two}}>
+              Aggiungi la tua prima ricetta!
+            </Text>
+          </View>
+        ) : (
+          <ButtonCardGroup>
+            {filteredRecipes.map(recipe => (
+              <ButtonCard
+                icon={<MaterialCommunityIcons name="food-halal" size={24} color={theme.accent}/>}
+                text={recipe.name.charAt(0).toUpperCase() + recipe.name.slice(1)}
+                fontWeight={"800"}
+                subtitle={`${recipe.ingredients.length} ingredienti`}
+                showArrow
+                iconBackgroundColor={theme.accent + 10}
+                onPress={() => router.push(`/recipe-detail/${encodeURIComponent(recipe.name)}`)} />
+            ))}
+          </ButtonCardGroup>
+        )}
       </AnimatedRefreshControl>
       </View>
     </Pressable>

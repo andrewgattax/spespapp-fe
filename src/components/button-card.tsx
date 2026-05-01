@@ -207,8 +207,10 @@ export function ButtonCard({
         }}>
           {/*@ts-ignore*/}
           <Text style={styles.text}>{text}</Text>
-          {/*@ts-ignore*/}
-          <Text style={styles.subtitle}>{subtitle}</Text>
+          {subtitle && (
+            /*@ts-ignore*/
+            <Text style={styles.subtitle}>{subtitle}</Text>
+          )}
         </View>
         {showArrow && (
           <MaterialIcons
@@ -219,5 +221,100 @@ export function ButtonCard({
         )}
       </View>
     </TouchableOpacity>
+  );
+}
+
+// ButtonCardSkeleton component - loading placeholder
+export function ButtonCardSkeleton() {
+  const theme = useTheme();
+  const context = useContext(ButtonCardContext);
+
+  // Determine position
+  const position: ButtonCardPosition = context
+    ? getPosition(context.index, context.total)
+    : 'single';
+
+  // Generate styles based on position and theme
+  const styles = useMemo(() => {
+    // Border radius configuration based on position
+    const borderRadiusConfig = {
+      single: {
+        borderTopLeftRadius: Spacing.four,
+        borderTopRightRadius: Spacing.four,
+        borderBottomLeftRadius: Spacing.four,
+        borderBottomRightRadius: Spacing.four,
+        marginTop: 0,
+      },
+      first: {
+        borderTopLeftRadius: Spacing.four,
+        borderTopRightRadius: Spacing.four,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        marginTop: 0,
+      },
+      middle: {
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        borderBottomLeftRadius: 0,
+        borderBottomRightRadius: 0,
+        marginTop: -1,
+      },
+      last: {
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
+        borderBottomLeftRadius: Spacing.four,
+        borderBottomRightRadius: Spacing.four,
+        marginTop: -1,
+      },
+    };
+
+    const radiusConfig = borderRadiusConfig[position];
+
+    return StyleSheet.create({
+      container: {
+        flexDirection: 'row',
+        backgroundColor: theme.textMuted + 15,
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        padding: Spacing.four,
+        borderWidth: 1,
+        borderColor: theme.textMuted + 30,
+        ...radiusConfig,
+      },
+      iconPlaceholder: {
+        width: 44,
+        height: 44,
+        backgroundColor: theme.textMuted + 25,
+        borderRadius: Spacing.two + 2,
+      },
+      textPlaceholder: {
+        width: '70%',
+        height: Spacing.three + 2,
+        backgroundColor: theme.textMuted + 25,
+        borderRadius: 4,
+        marginLeft: Spacing.three,
+      },
+      subtitlePlaceholder: {
+        width: '45%',
+        height: Spacing.two + 4,
+        backgroundColor: theme.textMuted + 20,
+        borderRadius: 4,
+        marginTop: Spacing.two,
+      },
+      textContainer: {
+        flex: 1,
+        marginLeft: Spacing.three,
+      },
+    });
+  }, [theme, position]);
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.iconPlaceholder} />
+      <View style={styles.textContainer}>
+        <View style={styles.textPlaceholder} />
+        <View style={styles.subtitlePlaceholder} />
+      </View>
+    </View>
   );
 }

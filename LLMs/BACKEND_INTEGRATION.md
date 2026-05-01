@@ -1,434 +1,422 @@
 # Backend Integration Guidelines
 
----
+This document provides guidelines for LLMs working with backend API integration in the Spespapp frontend.
 
-## 🔴 GOLDEN RULE: NEVER HALLUCINATE BACKEND SPECS
+## Architecture Overview
 
-- **DO**: Ask the user for backend endpoints, DTOs, and OpenAPI specs
-- **DO**: Read from provided `openapi.json` if available
-- **DO NOT**: Guess endpoint paths, request/response structures, or field names
-- **DO NOT**: Assume REST conventions - backend may not follow them
-- **DO NOT**: Create services without explicit backend specification
-
----
-
-## 📁 CRITICAL FILE LOCATIONS
+The API layer follows a structured pattern:
 
 ```
-src/
-├── api/
-│   ├── client.ts              # Axios client configuration (DO NOT modify)
-│   ├── schemas.ts             # Zod validation schemas for complex forms
-│   ├── types.ts               # TypeScript interfaces for simple requests/responses
-│   ├── index.ts               # Export all services and types
-│   └── service/
-│       ├── utenteService.ts   # User authentication endpoints
-│       ├── templateService.ts # Template endpoints
-│       └── storiaService.ts   # Story endpoints
-├── context/
-│   └── UserContext.tsx        # Logged user state management
-└── pages/
-    ├── Login.tsx              # Reference: complete form implementation
-    ├── Signup.tsx             # Reference: form with password confirmation
-    └── Profile.tsx            # User profile page
+src/api/
+├── client.ts          # Axios client with interceptors and HTTP methods
+├── types.ts           # TypeScript DTOs and interfaces
+├── schemas.ts         # Zod validation schemas
+├── index.ts           # Central export point
+└── service/           # Service classes for each backend controller
+    ├── userService.ts
+    ├── recipeService.ts
+    └── ...
 ```
 
----
+## Core Principles
 
-## 🔄 API LAYER ARCHITECTURE
+### 1. One Service Per Controller
+- Each backend controller has a corresponding service in `src/api/service/`
+- Example: `recipeController` → `recipeService.ts`, `userController` → `userService.ts`
+- Services are implemented as classes with a single exported instance
 
-Follow this exact flow for every backend integration:
-
-```
-User Action → Form (React Hook Form + Zod) → Service Method → API Client → Backend
-                           ↓
-                     Zod Validation
-                           ↓
-                     Type Safe Request/Response
-```
-
----
-
-## 📝 STEP 1: CREATE TYPES/SCHEMAS
-
-### When to use Zod Schemas (`src/api/schemas.ts`)
-**USE FOR**: Complex forms with validation rules, user input, React Hook Form
+### 2. Use HTTP Methods from client.ts
+Import and use the wrapper functions from `client.ts`:
 
 ```typescript
-// ✅ CORRECT
-import { z } from "zod"
+import { get, post, put, del } from "@/api/client"
 
-export const CreateStoriaRequestSchema = z.object({
-  titolo: z.string().min(1, "Inserisci un titolo").max(100, "Titolo troppo lungo"),
-  descrizione: z.string().min(10, "Descrizione troppo corta").max(500),
-  templateId: z.number().int().positive("Template non valido"),
-  categoria: z.enum(["avventura", "romanzo", "fantascienza", "thriller"]),
-  visibilita: z.boolean().default(false)
-})
-```
-
-### When to use TypeScript Interfaces (`src/api/types.ts`)
-**USE FOR**: Simple request bodies, ALL response types, internal types
-
-```typescript
-// ✅ CORRECT - Request body (no complex validation)
-export interface UpdateVisibilitaRequest {
-  visibilita: boolean
+// Usage
+async getAllRecipes(): Promise<RecipeDTO[]> {
+  return get<RecipeDTO[]>("/recipe")
 }
 
-// ✅ CORRECT - Response type
-export interface StoriaResponse {
+async addRecipe(request: AddRecipeRequest): Promise<RecipeDTO> {
+  return post<RecipeDTO>("/recipe", request)
+}
+```
+
+### 3. Define DTOs in types.ts
+All request/response interfaces must be defined in `src/api/types.ts`:
+
+```typescript
+export interface RecipeDTO {
   id: number
-  titolo: string
-  descrizione: string
-  createdAt: string
-  updatedAt: string
-  visibile: boolean
+  name: string
+  ingredients: IngredientDTO[]
 }
 
-// ✅ CORRECT - Response with nested data
-export interface TemplateDettagliatoResponse {
-  id: number
-  titolo: string
-  preview: string
-  categoria: string
-  strutture: StrutturaResponse[]
-  storieCreateCount: number
+export interface AddRecipeRequest {
+  name: string
+  ingredientNames: string[]
 }
 ```
 
-**❌ DO NOT**: Use Zod for simple request bodies that don't need validation
-**❌ DO NOT**: Use plain types for forms with user input - always use Zod schemas
-
----
-
-## 🔧 STEP 2: CREATE SERVICE METHODS
-
-Location: `src/api/service/[name]Service.ts`
-
-**Pattern: Class-based service with instance methods**
+### 4. Export Everything Through index.ts
+All services, types, and utilities are re-exported from `src/api/index.ts`:
 
 ```typescript
-// ✅ CORRECT - Complete service implementation
-import { post, get, put, del } from "../client"
-import { CreateStoriaRequestSchema } from "../schemas"
-import type { StoriaResponse, UpdateVisibilitaRequest } from "../types"
-
-class StoriaService {
-  // Zod schema input - no type annotation needed for body
-  async create(body: z.infer<typeof CreateStoriaRequestSchema>) {
-    return post<StoriaResponse>("/storia/create", body)
-  }
-
-  // TypeScript interface input - type annotation required
-  async updateVisibilita(body: UpdateVisibilitaRequest, id: number) {
-    return put<StoriaResponse>(`/storia/${id}/visibilita`, body)
-  }
-
-  // No request body
-  async getAll() {
-    return get<StoriaResponse[]>("/storia/all")
-  }
-
-  // Path parameter only
-  async delete(id: number) {
-    return del<void>(`/storia/${id}`)
-  }
-}
-
-export const storiaService = new StoriaService()
-```
-
-**Rules:**
-- Export a **singleton instance**, not the class
-- Use `z.infer<typeof SchemaName>` for Zod schema bodies
-- Use interface name for typed request bodies
-- **ALWAYS** specify response type in generic: `post<Response>(...)`
-- Path parameters go in URL string, not body
-
----
-
-## 📤 STEP 3: EXPORT FROM INDEX
-
-Location: `src/api/index.ts`
-
-```typescript
-// ✅ CORRECT
 export * from './client'
 export * from './types'
-export { utenteService } from './service/utenteService.ts'
-export { templateService } from "./service/templateService.ts"
-export { storiaService } from "./service/storiaService.ts"
+export * from './schemas'
+export { userService } from './service/userService'
+export { recipeService } from './service/recipeService'
 ```
 
----
+This allows clean imports:
+```typescript
+import { RecipeDTO, recipeService, ApiError } from '@/api'
+```
 
-## 🎨 STEP 4: IMPLEMENT FORM COMPONENT
+## Service Implementation Pattern
 
-Location: `src/pages/` or component files
-
-**Reference implementation**: `src/pages/Login.tsx`
+Follow this pattern when creating new services:
 
 ```typescript
-import React, { useState } from 'react'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { CreateStoriaRequestSchema } from "@/api/schemas"
-import { storiaService, ApiError } from "@/api"
-import { useUser } from "@/context/UserContext"
+// src/api/service/exampleService.ts
+import { ExampleDTO, CreateExampleRequest } from "../types"
+import { get, post, put, del } from "../client"
 
-function CreateStoriaForm() {
-  // 1. Type inference from Zod schema
-  type FormData = z.infer<typeof CreateStoriaRequestSchema>
+class ExampleService {
+  async getAll(): Promise<ExampleDTO[]> {
+    return get<ExampleDTO[]>("/example")
+  }
 
-  // 2. Access logged user
-  const { user } = useUser()
+  async getById(id: number): Promise<ExampleDTO> {
+    return get<ExampleDTO>(`/example/${id}`)
+  }
 
-  // 3. Server error state
-  const [serverError, setServerError] = useState("")
+  async create(request: CreateExampleRequest): Promise<ExampleDTO> {
+    return post<ExampleDTO>("/example", request)
+  }
 
-  // 4. Form setup
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting }
-  } = useForm<FormData>({
-    resolver: zodResolver(CreateStoriaRequestSchema),
-    mode: "onTouched"  // Validate on blur, not on every keystroke
-  })
+  async update(id: number, request: UpdateExampleRequest): Promise<ExampleDTO> {
+    return put<ExampleDTO>(`/example/${id}`, request)
+  }
 
-  // 5. Submit handler
-  const onSubmit = async (data: FormData) => {
-    setServerError("")  // Clear previous errors
+  async delete(id: number): Promise<void> {
+    return del<void>(`/example/${id}`)
+  }
+}
 
-    try {
-      const response = await storiaService.create(data)
-      // Handle success - redirect, update state, etc.
-      console.log("Created:", response)
-    } catch (error) {
-      // 6. Error handling - ALWAYS check for ApiError
-      if (error instanceof ApiError) {
-        setServerError(error.payload.message)
-      } else {
-        console.error("Unexpected error:", error)
-      }
+const exampleService = new ExampleService()
+export { exampleService }
+```
+
+## Error Handling
+
+### ApiError Class
+All API errors throw an `ApiError` exception (defined in `client.ts:9`):
+
+```typescript
+export class ApiError extends Error {
+  public readonly statusCode: number
+  public readonly payload: ErrorResponse
+
+  constructor(payload: ErrorResponse) {
+    super(payload.message)
+    this.name = 'ApiError'
+    this.statusCode = payload.status
+    this.payload = payload
+  }
+}
+```
+
+### Proper Error Handling Pattern
+Always use try-catch when calling services and check for `ApiError`:
+
+```typescript
+import { ApiError, recipeService } from '@/api'
+
+const loadRecipes = async () => {
+  try {
+    const response = await recipeService.getAllRecipes()
+    setRecipes(response)
+  } catch (e) {
+    console.error("Failed to load recipes", e)
+    if (e instanceof ApiError) {
+      setError(e.payload.message)
+    } else {
+      setError(e instanceof Error ? e.message : "Default error message")
     }
   }
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* 7. Server error display */}
-      {serverError && (
-        <div className="p-4 bg-destructive/10 border border-destructive text-destructive rounded">
-          {serverError}
-        </div>
-      )}
-
-      {/* 8. Field with validation error */}
-      {errors.titolo?.message && (
-        <p className="text-destructive text-sm">{errors.titolo.message}</p>
-      )}
-      <input
-        placeholder="Titolo"
-        {...register("titolo")}
-        className="w-full p-2 border rounded"
-      />
-
-      {/* 9. Submit button with loading state */}
-      <Button type="submit" disabled={isSubmitting}>
-        {isSubmitting ? "Creazione..." : "Crea Storia"}
-      </Button>
-    </form>
-  )
 }
 ```
 
-**Critical Form Rules:**
-- **ALWAYS** use `zodResolver` with your Zod schema
-- **ALWAYS** clear server errors at start of submit handler
-- **ALWAYS** catch `ApiError` and display `error.payload.message`
-- **ALWAYS** disable submit button while `isSubmitting`
-- **DO NOT** call services outside of submit handler
-- **DO NOT** forget `mode: "onTouched"` for better UX
+## Authentication
+
+The API client (`client.ts:29-44`) automatically attaches JWT tokens to requests:
+
+- Tokens are stored securely with key `'auth_token'`
+- The request interceptor adds `Authorization: Bearer <token>` to all requests
+- 401 responses trigger automatic token cleanup (client.ts:50-59)
+
+**Never manually attach auth headers** - the interceptor handles it.
+
+## Golden Rules
+
+### 🔴 NEVER Hallucinate
+
+1. **NEVER invent DTOs or interfaces** - Always check `api-docs.json` first
+2. **NEVER guess endpoint paths or HTTP methods** - Verify in `api-docs.json`
+3. **NEVER assume request/response structures** - Check the OpenAPI spec
+4. **NEVER add fields that don't exist** - Only use what's documented
+
+### 🟡 When in Doubt, ASK
+
+If you cannot find something in `api-docs.json`:
+1. Search the existing codebase for similar patterns
+2. Ask the user for clarification
+3. Do NOT make assumptions
+
+### 🟢 Best Practices
+
+1. **Match backend naming**: If the backend has `AddRecipeDTO`, name it `AddRecipeRequest` or `AddRecipeDTO` in the frontend
+2. **Use proper typing**: Always parametrize HTTP methods with the response type: `get<RecipeDTO[]>(...)`
+3. **Handle edge cases**: Check for empty arrays, null values, undefined fields
+4. **Log errors**: Always console.error with context for debugging
+5. **Clean imports**: Import from `@/api` for cleaner code
+
+## Working with api-docs.json
+
+The `api-docs.json` file contains the OpenAPI 3.1.0 specification for the backend.
+
+### Finding Endpoints
+
+Search for the path pattern:
+```json
+"/recipe": {
+  "get": { "operationId": "getAllRecipes", ... },
+  "post": { "operationId": "addRecipe", ... }
+}
+```
+
+### Finding Request/Response Schemas
+
+Look in `components.schemas`:
+```json
+"RecipeDTO": {
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer", "format": "int64" },
+    "name": { "type": "string" },
+    "ingredients": { "type": "array", "items": { "$ref": "#/components/schemas/IngredientDTO" } }
+  }
+}
+```
+
+### Finding Required Fields
+
+Check the `required` array in schemas:
+```json
+"AddRecipeDTO": {
+  "required": ["ingredientNames", "name"]
+}
+```
+
+## Example Workflow: Adding a New Feature
+
+1. **Check api-docs.json** for the endpoint, method, request/response schemas
+2. **Add types** to `src/api/types.ts` (both DTOs and request interfaces)
+3. **Create service** in `src/api/service/[name]Service.ts` following the pattern
+4. **Export service** from `src/api/index.ts`
+5. **Import and use** in components with proper error handling
+6. **Test thoroughly** with both success and error cases
+
+## Common Pitfalls
+
+❌ **Wrong**: Creating types without checking api-docs.json
+```typescript
+// Don't guess field names or types!
+export interface RecipeDTO {
+  recipeId: number  // Wrong! Backend uses "id"
+  title: string     // Wrong! Backend uses "name"
+}
+```
+
+✅ **Right**: Verify against api-docs.json
+```typescript
+// After checking api-docs.json
+export interface RecipeDTO {
+  id: number
+  name: string
+  ingredients: IngredientDTO[]
+}
+```
+
+❌ **Wrong**: Calling endpoints without checking if they exist
+```typescript
+// Don't assume this endpoint exists!
+get<RecipeDTO[]>("/recipes/all")
+```
+
+✅ **Right**: Verify endpoint exists in api-docs.json
+```typescript
+// After checking: GET /recipe returns RecipeDTO[]
+get<RecipeDTO[]>("/recipe")
+```
+
+## Existing Services Reference
+
+- **userService**: Authentication, device ID, public key management
+- **recipeService**: CRUD operations for recipes
+
+When working with these services, import from `@/api`:
+```typescript
+import { userService, recipeService } from '@/api'
+```
 
 ---
 
-## ⚠️ ERROR HANDLING PATTERNS
+**Remember**: The api-docs.json is your source of truth. When it contradicts assumptions, the docs win. Always ask when unsure!
 
-### ApiError Structure
+## UI State Management
+
+When consuming APIs in views/components, you **MUST** always handle three states properly:
+
+### 1. Loading State
+Track loading state and always clear it in a `finally` block:
+
 ```typescript
-class ApiError extends Error {
-  statusCode: number
-  payload: {
-    message: string    // User-friendly error message
-    error: string      // Technical error type
-    status: number     // HTTP status code
-    path: string       // Request path
+const [loading, setLoading] = useState(true)
+
+const loadRecipes = async () => {
+  try {
+    // fetch data
+  } catch (e) {
+    // handle error
+  } finally {
+    setLoading(false) // Always clear loading state
   }
 }
 ```
 
-### Correct Error Handling
+### 2. Error State - Display with Retry
+Always show errors to users and provide a retry mechanism:
+
 ```typescript
-// ✅ CORRECT
-try {
-  await service.login(data)
-} catch (error) {
-  if (error instanceof ApiError) {
-    // Display user-friendly message
-    setError(error.payload.message)
-  }
-}
+const [error, setError] = useState("")
 
-// ❌ WRONG - Don't assume error structure
-catch (error) {
-  setError(error.message)  // Might not exist
-}
-
-// ❌ WRONG - Don't ignore errors
-catch (error) {
-  console.error(error)
-}
-```
-
----
-
-## 📋 COMPLETE WORKFLOW EXAMPLE
-
-**Task**: Add "Update Profile" functionality
-
-### 1. Ask for Backend Specs
-```
-"What are the endpoint details for updating user profile?
-Please provide:
-- Endpoint path and method
-- Request DTO structure
-- Response DTO structure
-- Or share the openapi.json file"
-```
-
-### 2. Create Schema/Types
-```typescript
-// src/api/schemas.ts
-export const UpdateProfileRequestSchema = z.object({
-  username: z.string().min(4).max(20),
-  bio: z.string().max(200).optional()
-})
-
-// src/api/types.ts
-export interface UserProfileResponse {
-  username: string
-  bio: string | null
-  storiePubblicate: number
-  storieCondivise: number
-  templateSalvati: number
-}
-```
-
-### 3. Create Service Method
-```typescript
-// src/api/service/utenteService.ts
-class UtenteService {
-  // ... existing methods
-
-  async updateProfile(body: z.infer<typeof UpdateProfileRequestSchema>) {
-    return put<UserProfileResponse>("/utente/profile", body)
-  }
-}
-```
-
-### 4. Create Form Component
-```typescript
-// src/pages/Profile.tsx
-import { UpdateProfileRequestSchema } from "@/api/schemas"
-import { utenteService, ApiError } from "@/api"
-import { useUser } from "@/context/UserContext"
-
-function Profile() {
-  const { user, loadFromJwt } = useUser()
-  const [serverError, setServerError] = useState("")
-  const [success, setSuccess] = useState(false)
-
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(UpdateProfileRequestSchema),
-    defaultValues: {
-      username: user?.username || "",
-      bio: ""
+const loadRecipes = async () => {
+  try {
+    setError("") // Clear previous errors
+    const response = await recipeService.getAllRecipes()
+    setRecipes(response)
+  } catch (e) {
+    console.error("Failed to load recipes", e)
+    if (e instanceof ApiError) {
+      setError(e.payload.message)
+    } else {
+      setError(e instanceof Error ? e.message : "Default error message")
     }
-  })
-
-  const onSubmit = async (data) => {
-    setServerError("")
-    setSuccess(false)
-
-    try {
-      await utenteService.updateProfile(data)
-      setSuccess(true)
-      // Optionally reload user data
-    } catch (error) {
-      if (error instanceof ApiError) {
-        setServerError(error.payload.message)
-      }
-    }
+  } finally {
+    setLoading(false)
   }
-
-  return (
-    <form onSubmit={handleSubmit(onSubmit)}>
-      {/* ... form fields ... */}
-    </form>
-  )
 }
+
+// In render
+{error ? (
+  <View style={{padding: Spacing.four, alignItems: 'center', marginTop: Spacing.eight}}>
+    <Text style={{color: theme.destructive, marginBottom: Spacing.three, textAlign: 'center'}}>
+      {error}
+    </Text>
+    <Button
+      title="Riprova"
+      onPress={loadRecipes}
+      variant="outlined"
+    />
+  </View>
+) : (
+  // actual content or empty state
+)}
 ```
 
----
+### 3. Empty State - Inform and Guide
+When API returns empty arrays, show a helpful message with icon:
 
-## 🚨 COMMON MISTAKES TO AVOID
+```typescript
+// In render, after checking error
+{filteredRecipes.length === 0 ? (
+  <View style={{padding: Spacing.four, alignItems: 'center', flex: 1, justifyContent: 'center', marginTop: Spacing.eight}}>
+    <MaterialCommunityIcons name="food-halal" size={64} color={theme.textMuted} />
+    <Text style={{color: theme.textMuted, marginTop: Spacing.three, fontSize: Spacing.three}}>
+      Nessuna ricetta trovata
+    </Text>
+    <Text style={{color: theme.textMuted, marginTop: Spacing.two}}>
+      Aggiungi la tua prima ricetta!
+    </Text>
+  </View>
+) : (
+  // render actual list
+  <ButtonCardGroup>
+    {filteredRecipes.map(recipe => (
+      <ButtonCard ... />
+    ))}
+  </ButtonCardGroup>
+)}
+```
 
-1. **❌ Creating services without backend specs**
-   - Always ask user for endpoint details first
+### Complete State Pattern
+The full pattern should look like this:
 
-2. **❌ Using `any` in service methods**
-   - Use `z.infer<typeof Schema>` or proper interfaces
+```typescript
+// 1. Setup states
+const [loading, setLoading] = useState(true)
+const [error, setError] = useState("")
+const [data, setData] = useState<DataType[]>([])
 
-3. **❌ Forgetting to export services from index.ts**
-   - Services won't be importable
+// 2. Load function with proper error handling
+const loadData = useCallback(async () => {
+  try {
+    setError("")
+    const response = await someService.getAll()
+    setData(response)
+  } catch (e) {
+    console.error("Failed to load data", e)
+    if (e instanceof ApiError) {
+      setError(e.payload.message)
+    } else {
+      setError(e instanceof Error ? e.message : "Default user-friendly message")
+    }
+  } finally {
+    setLoading(false)
+  }
+}, [])
 
-4. **❌ Not catching ApiError in forms**
-   - Errors won't display to users
+// 3. In render: loading → error → empty → content
+{loading ? (
+  // Show loading indicator - user will specify what to use
+  <LoadingIndicator />
+) : error ? (
+  <ErrorDisplay error={error} onRetry={loadData} />
+) : data.length === 0 ? (
+  <EmptyState message="No items found" />
+) : (
+  <DataList items={data} />
+)}
+```
 
-5. **❌ Using Zod for simple API requests**
-   - Use TypeScript interfaces instead
+### Best Practices
 
-6. **❌ Forgetting response type in API calls**
-   - `post<Response>(url, body)` not `post(url, body)`
+✅ **Always**:
+- Use `finally` block to clear loading state
+- Clear previous errors before new requests
+- Log errors with context for debugging
+- Provide retry buttons for failed requests
+- Use descriptive, user-friendly error messages
+- Show appropriate icons in empty states
 
-7. **❌ Not disabling submit button during submission**
-   - Causes duplicate submissions
+❌ **Never**:
+- Leave loading state stuck on errors
+- Show raw error messages to users (use ApiError.payload.message)
+- Ignore empty states (always show something)
+- Mix up the order: loading → error → empty → content
 
-8. **❌ Storing user data in component state**
-   - Use UserContext instead
+### Reference Implementation
 
----
-
-## ✅ CHECKLIST BEFORE IMPLEMENTING
-
-- [ ] Have I received backend endpoint specs from user?
-- [ ] Have I checked if `openapi.json` is available?
-- [ ] Am I using Zod schema for forms with validation?
-- [ ] Am I using TypeScript interface for simple requests?
-- [ ] Did I add response type to API call?
-- [ ] Did I export the service from `index.ts`?
-- [ ] Am I catching `ApiError` in form submit handler?
-- [ ] Am I displaying `error.payload.message` to user?
-- [ ] Am I disabling submit button while submitting?
-
-> **Note**: For Italian language requirements, user context usage, and UI development patterns, see [dev_guidelines.md](./dev_guidelines.md)
-
----
-
-**When in doubt, reference:**
-- Login form: `src/pages/Login.tsx`
-- Service pattern: `src/api/service/utenteService.ts`
-- API client: `src/api/client.ts`
+See `src/app/(auth)/(tabs)/recipes.tsx:57-162` for a complete example of proper state management with error handling, empty states, and pull-to-refresh.

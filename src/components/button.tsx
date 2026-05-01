@@ -12,7 +12,7 @@ import { Spacing } from '@/constants/theme';
 
 type ButtonVariant = 'filled' | 'outlined';
 
-interface ButtonProps {
+export interface ButtonProps {
   title: string;
   onPress: () => void;
   disabled?: boolean;
